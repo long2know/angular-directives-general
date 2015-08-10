@@ -11,8 +11,8 @@ This is a general repository for Angular Directives that I've developed for my b
   - [Blog](https://long2know.com/2015/07/angular-multiselect-dropdown/)
   - [Demo Plunker](http://plnkr.co/H3WdhUL8OQpfcR1mFlnb)
   - [Demo Codepen](http://codepen.io/long2know/pen/PqLRyZ)
-  - 
-  ### Angular-UI Tri-State Checkbox
+ 
+### Angular-UI Tri-State Checkbox
   - [Blog](https://long2know.com/2015/04/angular-tri-state-checkbox/)
   - [Demo Plunker](http://plnkr.co/kRQuyk8w6uNcFyWxEFdJ)
   - [Demo Codepen](http://codepen.io/long2know/pen/NqJYQg)
