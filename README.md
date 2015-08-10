@@ -4,4 +4,5 @@ This is a general repository for Angular Directives that I've developed for my b
 
 ### Date Before and After validator
   - [Blog](https://long2know.com/2015/07/angular-date-before-and-after-validation/)
-  - [Demo](http://plnkr.co/0QNA31rdRIHOPVsk77mq)
+  - [Demo Plunker](http://plnkr.co/0QNA31rdRIHOPVsk77mq)
+  - [Demo Codepen](http://codepen.io/long2know/pen/ZGPvdg)
