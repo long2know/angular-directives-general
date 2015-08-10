@@ -1,0 +1,65 @@
+multiselect {
+    display: block;
+}
+
+    multiselect > .btn-group {
+        min-width: 180px;
+    }
+
+    multiselect .btn {
+        width: 100%;
+        background-color: #FFF;
+    }
+
+        multiselect .btn.has-error {
+            border: 1px solid #a94442 !important;
+            color: #db524b;
+        }
+
+    multiselect .dropdown-menu {
+        max-height: 300px;
+        min-width: 200px;
+        overflow-y: auto;
+    }
+
+        multiselect .dropdown-menu .filter > input {
+            width: 99%;
+        }
+
+        multiselect .dropdown-menu .filter .glyphicon {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+    multiselect .dropdown-menu {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 2px;
+    }
+
+    multiselect > .btn-group > button {
+        padding-right: 20px;
+    }
+
+        multiselect > .btn-group > button > .caret {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid black;
+            right: 5px;
+            top: 45%;
+            position: absolute;
+        }
+
+    multiselect .dropdown-menu > li > a {
+        padding: 3px 10px;
+        cursor: pointer;
+    }
+
+        multiselect .dropdown-menu > li > a i {
+            margin-right: 4px;
+        }
+
+.glyphicon-none:before {
+    content: "\e013";
+    color: transparent !important;
+}
