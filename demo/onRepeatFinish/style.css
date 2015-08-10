@@ -1,0 +1,21 @@
+.itemlist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+    max-height:90%;
+    width: 100%;
+}
+
+.itemlist > li {
+    line-height: 1.4em;
+    background-color: white;
+    color: black;
+    cursor: pointer;
+    padding: 6px 0 6px 5px;
+}
+
+.new-item {
+    background-color: red !important;
+    overflow: none;
+}

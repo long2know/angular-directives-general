@@ -16,3 +16,8 @@ This is a general repository for Angular Directives that I've developed for my b
   - [Blog](https://long2know.com/2015/04/angular-tri-state-checkbox/)
   - [Demo Plunker](http://plnkr.co/kRQuyk8w6uNcFyWxEFdJ)
   - [Demo Codepen](http://codepen.io/long2know/pen/NqJYQg)
+  
+  ### On Repeat Finish
+  - [Blog](https://long2know.com/2015/03/animating-and-angular-repeater-finish/)
+  - [Demo Plunker](http://plnkr.co/2bzbjhpoERpXSKfl9GsK)
+  - [Demo Codepen](http://codepen.io/long2know/pen/WvmJod)
