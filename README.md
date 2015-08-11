@@ -17,7 +17,12 @@ This is a general repository for Angular Directives that I've developed for my b
   - [Demo Plunker](http://plnkr.co/edit/4R4OJ1?p=preview)
   - [Demo Codepen](http://codepen.io/long2know/pen/NqJYQg)
   
-  ### On Repeat Finish
-  - [Blog](https://long2know.com/2015/03/animating-and-angular-repeater-finish/)
-  - [Demo Plunker](http://plnkr.co/edit/tUTzOS?p=preview)
-  - [Demo Codepen](http://codepen.io/long2know/pen/WvmJod)
+### On Repeat Finish
+- [Blog](https://long2know.com/2015/03/animating-and-angular-repeater-finish/)
+- [Demo Plunker](http://plnkr.co/edit/tUTzOS?p=preview)
+- [Demo Codepen](http://codepen.io/long2know/pen/WvmJod)
+
+### Model Property Watch and Reset Directive
+- [Blog](https://long2know.com)
+- [Demo Plunker](http://plnkr.co/edit/w876ka?p=preview)
+- [Demo Codepen](http://codepen.io/long2know/pen/PqLvBX)
