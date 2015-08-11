@@ -16,9 +16,9 @@
             initItems = function () {
                 vm.items = [];
                 vm.items2 = [];
-                for (var i = 0; i < 5; i++) {
-                    vm.items.push({ name: "Item1 " + i.toString() });
-                    vm.items2.push({ name: "Item2 " + i.toString() });
+                for (var i = 1; i < 6; i++) {
+                    vm.items.push({ id: 'list1_' + i.toString(), name: "Item1 " + i.toString() });
+                    vm.items2.push({ id: 'list2_' + i.toString(), name: "Item2 " + i.toString() });
                 }
             },
             init = function () {
