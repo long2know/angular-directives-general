@@ -23,12 +23,12 @@
             restrict: 'A',
             scope: {
                 isState: '=',
-                isStateClass: '@',
-                isStateTimeout: '@'
+                isStateClass: '=',
+                isStateTimeout: '='
             },
             link: function (scope, element, attrs) {
                 var
-                    className = angular.isDefined(attrs.isStateClass) ? attrs.isStateClass : 'is-state',
+                    className = angular.isDefined(attrs.isStateClass) ? scope.isStateClass : 'is-state',
                     timeout = angular.isDefined(attrs.isStateTimeout) ? scope.isStateTimeout : 2000,
                     startAnimation = function () {
                         if (scope.isState) {

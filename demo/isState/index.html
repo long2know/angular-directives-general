@@ -32,7 +32,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="i in vm.items track by $index" is-state="i.isSelected" is-state-class="is-state" is-state-transition="vm.timeout">
+                    <tr ng-repeat="i in vm.items track by $index" is-state="i.isSelected" is-state-class="vm.className" is-state-timeout="vm.timeout">
                         <td class="td-checkbox">
                             <input type="checkbox" ng-model="i.isSelected">
                         </td>
@@ -53,7 +53,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="i in vm.items2 track by $index" ng-class="{ 'is-state': i.isSelected }">
+                    <tr ng-repeat="i in vm.items2 track by $index" ng-class="{ '{{vm.className}}': i.isSelected }">
                         <td class="td-checkbox">
                             <input type="checkbox" ng-model="i.isSelected" ng-change="vm.itemListClick(i)">
                         </td>

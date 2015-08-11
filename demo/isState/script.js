@@ -16,13 +16,14 @@
             initItems = function () {
                 vm.items = [];
                 vm.items2 = [];
-                for (var i = 0; i < 10; i++) {
+                for (var i = 0; i < 5; i++) {
                     vm.items.push({ name: "Item1 " + i.toString() });
                     vm.items2.push({ name: "Item2 " + i.toString() });
                 }
             },
             init = function () {
                 vm.timeout = 3000;
+                vm.className = 'is-state';
                 $timeout(function () { setTimeout(initItems(), 2000) }, 0);
             };
 
