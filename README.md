@@ -4,20 +4,20 @@ This is a general repository for Angular Directives that I've developed for my b
 
 ### Date Before and After validator
   - [Blog](https://long2know.com/2015/07/angular-date-before-and-after-validation/)
-  - [Demo Plunker](http://plnkr.co/0QNA31rdRIHOPVsk77mq)
+  - [Demo Plunker](http://plnkr.co/URH2Ie)
   - [Demo Codepen](http://codepen.io/long2know/pen/ZGPvdg)
 
 ### Angular-UI Multiselect Checkbox Dropdown
   - [Blog](https://long2know.com/2015/07/angular-multiselect-dropdown/)
-  - [Demo Plunker](http://plnkr.co/H3WdhUL8OQpfcR1mFlnb)
+  - [Demo Plunker](http://plnkr.co/uWZT3I)
   - [Demo Codepen](http://codepen.io/long2know/pen/PqLRyZ)
  
 ### Angular-UI Tri-State Checkbox
   - [Blog](https://long2know.com/2015/04/angular-tri-state-checkbox/)
-  - [Demo Plunker](http://plnkr.co/kRQuyk8w6uNcFyWxEFdJ)
+  - [Demo Plunker](http://plnkr.co/4R4OJ1)
   - [Demo Codepen](http://codepen.io/long2know/pen/NqJYQg)
   
   ### On Repeat Finish
   - [Blog](https://long2know.com/2015/03/animating-and-angular-repeater-finish/)
-  - [Demo Plunker](http://plnkr.co/2bzbjhpoERpXSKfl9GsK)
+  - [Demo Plunker](http://plnkr.co/tUTzOS)
   - [Demo Codepen](http://codepen.io/long2know/pen/WvmJod)
