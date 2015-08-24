@@ -45,7 +45,7 @@
     var multiselect = function ($parse, $filter, $document, $compile, optionParser) {
         return {
             restrict: 'EA',
-            require: ['ngModel', '^form'],
+            require: ['ngModel', '?^form'],
             link: function (originalScope, element, attrs, ctrls) {
                 var modelCtrl = ctrls[0];
                 var formCtrl = (ctrls.length > 1 && typeof (ctrls[1]) !== 'undefined') ? ctrls[1] : null;
@@ -108,9 +108,10 @@
                                 localHeader = getFirstSelectedLabel();
                             }
                         } else {
-                            var local = {};
-                            local[parserResult.itemName] = modelCtrl.$modelValue;
-                            localHeader = parserResult.viewMapper(local);
+                            //var local = {};
+                            //local[parserResult.itemName] = parseInt(modelCtrl.$modelValue);
+                            //localHeader = parserResult.viewMapper(local);
+                            localHeader = getFirstSelectedLabel();
                         }
                         scope.header = localHeader;
                     },
@@ -132,7 +133,7 @@
                             var value = parserResult.modelMapper(local)
                             var isChecked = isArray ?
                                 (modelCtrl.$modelValue.indexOf(value.toString()) != -1 || modelCtrl.$modelValue.indexOf(value) != -1) :
-                                (modelCtrl.$modelValue == value);
+                                (!isEmpty(modelCtrl.$modelValue) && modelCtrl.$modelValue == value);
                             var item = {
                                 label: parserResult.viewMapper(local),
                                 model: model[i],
@@ -177,8 +178,16 @@
                         } else {
                             angular.forEach(scope.items, function (item) {
                                 if (item.checked) {
-                                    value = item.model;
-                                    return false;
+                                    if (isComplex) {
+                                        value = item.model;
+                                        return false;
+                                    }
+                                    else {
+                                        var local = {};
+                                        local[parserResult.itemName] = item.model;
+                                        value = parserResult.modelMapper(local);
+                                        return false;
+                                    }
                                 }
                             })
                         }
@@ -216,7 +225,7 @@
                     scope.$destroy();
                 });
 
-                // Required validator - note, must be wrapped in ngForm
+                // required validator
                 if (attrs.required || attrs.ngRequired) {
                     required = true;
                 }
@@ -225,21 +234,21 @@
                     required = newVal;
                 });
 
-                // Watch disabled state
+                //watch disabled state
                 scope.$watch(function () {
                     return $parse(attrs.disabled)(originalScope);
                 }, function (newVal) {
                     scope.disabled = newVal;
                 });
 
-                // Watch single/multiple state for dynamically change single to multiple
+                //watch single/multiple state for dynamically change single to multiple
                 scope.$watch(function () {
                     return $parse(attrs.multiple)(originalScope);
                 }, function (newVal) {
                     isMultiple = newVal || false;
                 });
 
-                // Watch option changes
+                //watch option changes for options that are populated dynamically
                 scope.$watch(function () {
                     return parserResult.source(originalScope);
                 }, function (newVal) {
@@ -248,13 +257,18 @@
                     }
                 }, true);
 
-                ////watch model change
+                ////watch model change  --> This has an issue in that it seems that all models are updated to the same value
                 scope.$watch(function () {
                     return modelCtrl.$modelValue;
                 }, function (newVal, oldVal) {
+                    //when directive initialize, newVal usually undefined. Also, if model value already set in the controller
+                    //for preselected list then we need to mark checked in our scope item. But we don't want to do this every time
+                    //model changes. We need to do this only if it is done outside directive scope, from controller, for example.
                     if (angular.isDefined(newVal)) {
                         markChecked(newVal);
-                        scope.$eval(changeHandler);
+                        // Technically, defining ngChange will already have a watcher triggering its handler
+                        // So, triggering it manually should be redundant
+                        //scope.$eval(changeHandler);
                     }
                     getHeaderText();
                     modelCtrl.$setValidity('required', scope.valid());
@@ -303,7 +317,9 @@
                         item.checked = false;
                     });
                     canCheck();
-                    setModelValue(true);
+                    if (isMultiple) {
+                        setModelValue(true);
+                    }
                 };
 
                 scope.select = function (item) {
@@ -326,7 +342,7 @@
         return {
             restrict: 'E',
             replace: true,
-            require: ['^ngModel', '^form'],
+            require: ['^ngModel', '?^form'],
             templateUrl: 'template/multiselect/multiselectPopup.html',
             link: function (scope, element, attrs, ctrls) {
                 var
@@ -354,6 +370,37 @@
                         $document.bind('click', clickHandler);
                         scope.focus();
                     }
+
+                    // Figure out if dropup
+                    var parent = element.parent();
+                    var windowScrollTop = $(window).scrollTop();
+                    var windowHeight = $(window).height();
+                    var windowWidth = $(window).width();
+                    var ulElement = element.find("ul:first");
+                    var dropdownHeight = ulElement.height();
+                    var dropdownWidth = ulElement.width();
+
+                    // Determine if outside of visible range when dropping down
+                    var elementTop = element.offset().top + element.height() - windowScrollTop;
+                    var elementBottom = windowHeight - element.height() - element.offset().top + windowScrollTop;
+                    if ((elementBottom < dropdownHeight) && (elementTop > dropdownHeight)) {
+                        // Alert should drop up!
+                        scope.dropup = true;
+                    }
+                    else {
+                        scope.dropup = false;
+                    }
+
+                    // Figure out if we need left adjust
+                    if (element.offset().left + dropdownWidth >= windowWidth) {
+                        scope.isOffRight = true;
+                        var adjust = ((element.offset().left + dropdownWidth - windowWidth) + 10) * -1.0;
+                        ulElement.css("left", adjust.toString() + "px");
+                    }
+                    else {
+                        scope.isOffRight = false;
+                        ulElement.css("left", "0");
+                    }
                 };
 
                 scope.focus = function focus() {
@@ -366,9 +413,9 @@
         }
     };
 
-    angular.module("myApp").run(["$templateCache", function ($templateCache) {
+    angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/multiselect/multiselectPopup.html",
-            "<div class=\"btn-group\">" +
+            "<div class=\"btn-group\" ng-class=\"{ dropup: dropup }\">" +
                 "<button class=\"btn btn-default dropdown-toggle\" ng-click=\"toggleSelect()\" ng-disabled=\"disabled\" ng-class=\"{'has-error': !valid()}\">" +
                     "<span class=\"pull-left\" ng-bind=\"header\"></span>" +
                     "<span class=\"caret pull-right\"></span>" +

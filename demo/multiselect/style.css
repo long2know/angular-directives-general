@@ -42,12 +42,15 @@ multiselect {
     }
 
         multiselect > .btn-group > button > .caret {
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 4px solid black;
             right: 5px;
             top: 45%;
             position: absolute;
+        }
+
+        multiselect > .btn-group:not(.dropup) > button > .caret {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid black;
         }
 
     multiselect .dropdown-menu > li > a {
