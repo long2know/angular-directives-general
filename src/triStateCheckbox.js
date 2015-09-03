@@ -10,11 +10,13 @@
         angular.module('long2know.services', ['ngResource', 'ngAnimate']);
         angular.module('long2know.controllers', []);
         angular.module('long2know.directives', []);
+        angular.module('long2know.constants', []);
         angular.module('long2know',
             [
                 'long2know.services',
                 'long2know.controllers',
-                'long2know.directives'
+                'long2know.directives',
+                'long2know.constants'
             ]);
     }
 
@@ -23,36 +25,44 @@
             replace: true,
             restrict: 'E',
             scope: {
-                items: '=',
-                topLevelClick: '=',
+                checkboxes: '=',
+                masterSet: '=',
+                setMaster: '=',
+                masterClick: '=',
+                masterSetOff: '@masterSetOff',
                 childClick: '@childClick'
             },
-            template: '<input type="checkbox" ng-model="topLevel" ng-change="topLevelChange()">',
+            template: '<input type="checkbox" ng-model="master" ng-change="masterChange()">',
             controller: ['$scope', '$element', function ($scope, $element) {
 
                 $scope.setState = function () {
-                    var count = 0;
-                    for (i = 0; i < $scope.items.length; i++)
-                        count += $scope.items[i].isSelected ? 1 : 0;
+                    var set = 0;
+                    for (i = 0; i < $scope.checkboxes.length; i++)
+                        set += $scope.checkboxes[i].isSelected ? 1 : 0;
                     $element.prop('indeterminate', false);
-                    $scope.topLevel = (count === 0) ? false : true;
-                    if (count > 0 && count < i) {
-                        $scope.topLevel = false;
+                    $scope.master = (set === 0) ? false : true;
+                    if (set > 0 && set < i) {
+                        $scope.master = false;
                         $element.prop('indeterminate', true);
                     }
                 };
 
-                $scope.topLevelChange = function () {
-                    for (i = 0; i < $scope.items.length; i++) {
-                        $scope.items[i].isSelected = $scope.topLevel;
+                $scope.$on($scope.masterSetOff, function () {
+                    $element.prop('indeterminate', false);
+                    $element.attr('checked', false);
+                });
+
+                $scope.masterChange = function () {
+                    for (i = 0; i < $scope.checkboxes.length; i++) {
+                        $scope.checkboxes[i].isSelected = $scope.master;
                     }
-                    if ($scope.topLevelClick) {
-                        $scope.topLevelClick();
+                    if ($scope.masterClick) {
+                        $scope.masterClick();
                     }
                 };
 
                 if (!$scope.childClick) {
-                    $scope.$watch('items', function () {
+                    $scope.$watch('checkboxes', function () {
                         $scope.setState();
                     }, true);
                 } else {

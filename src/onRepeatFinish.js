@@ -10,11 +10,13 @@
         angular.module('long2know.services', ['ngResource', 'ngAnimate']);
         angular.module('long2know.controllers', []);
         angular.module('long2know.directives', []);
+        angular.module('long2know.constants', []);
         angular.module('long2know',
             [
                 'long2know.services',
                 'long2know.controllers',
-                'long2know.directives'
+                'long2know.directives',
+                'long2know.constants'
             ]);
     }
 

@@ -1,0 +1,67 @@
+<html>
+
+<head>
+    <title>Custom Table Demo</title>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-animate.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-loader.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-sanitize.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-cookies.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-touch.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-resource.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.1/ui-bootstrap.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.1/ui-bootstrap-tpls.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.13/angular-ui-router.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui-ieshiv.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type='text/javascript' src="script.js"></script>
+    <script type='text/javascript' src="../../src/customTable.js"></script>
+    <script type='text/javascript' src="../../src/triStateCheckbox.js"></script>
+    <script type='text/javascript' src="../../../angular-services-general/src/watchCountService.js"></script>
+</head>
+
+<body class="flex-layout" ng-app="myApp">
+    <div class="container-fluid row" ng-controller="myCtrl as vm">
+        <div class="buttons">
+            <button ng-click="vm.addItems(100)">Add 100 Items</button>
+            <button ng-click="vm.addItems(1000)">Add 1000 Items</button>
+            <button ng-click="vm.removeItems(100)">Remove 100 Items</button>
+            <button ng-click="vm.removeItems(1000)">Remove 1000 Items</button>
+            <button ng-click="vm.toggleTable1()">Toggle Repeater Table</button>
+            <button ng-click="vm.toggleTable2()">Toggle Non-Repeater Table</button>
+        </div>
+        <div class="flex-scroll-content" ng-if="vm.isTable1Visible">
+            <div>
+                <h3>
+                    <span>Table with Repeater<span>
+                    <span>Row Count</span>
+                    <span ng-bind="vm.tableData1.length"></span>
+                    <span style="font-weight:bold">$Watchers: </span>
+                    <span style="font-weight:bold" ng-bind="vm.watchCount" />
+                </h3>
+            </div>
+            <div>
+                <custom-table table-columns="vm.tableColumns" ng-model="vm.tableData1" client-sort="true" track-by="id" sort-by="vm.sortBy1"
+                sort-direction="vm.sortDirection1"></custom-table>
+            </div>
+        </div>
+        <div class="flex-scroll-content" ng-if="vm.isTable2Visible">
+            <div>
+                <h3>
+                    <span>Table Rendered Direct to DOM<span>
+                    <span>Row Count</span>
+                    <span ng-bind="vm.tableData2.length"></span>
+                </h3>
+            </div>
+            <div>
+                <custom-table table-columns="vm.tableColumns" ng-model="vm.tableData2" updated-rows="vm.updatedRows" use-repeat="false" client-sort="true"
+                track-by="id" sort-by="vm.sortBy2" sort-direction="vm.sortDirection2"></custom-table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
