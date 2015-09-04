@@ -28,6 +28,6 @@ This is a general repository for Angular Directives that I've developed for my b
 - [Demo Codepen](http://codepen.io/long2know/pen/PqLvBX)
 
 ### Custom Table Directive
-- [Blog](https://long2know.com)
-- [Demo Plunker](http://plnkr.co/edit/7MC3oBSHWwiq3wROvdBS?p=preview)
+- [Blog](https://long2know.com/2015/09/angular-reusable-table-directive/)
+- [Demo Plunker](http://plnkr.co/edit/GSORcd?p=preview)
 - [Demo Codepen](http://codepen.io/long2know/pen/dYPvOW)
