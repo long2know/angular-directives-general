@@ -104,7 +104,7 @@
                     indexes = [],
                     previousError = [],
                     $tbody = $(tblCtrl.element.find("tbody")),
-                    indexRegex = /([\d])/g;
+                    indexRegex = /([\d]+)/g;
                 angular.forEach($scope.updatedRows, function (model) {
                     var key = model.id;
                     $row = $tbody.find("tr[data-key=\"" + key + "\"]");
