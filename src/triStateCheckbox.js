@@ -45,11 +45,17 @@
                         $scope.master = false;
                         $element.prop('indeterminate', true);
                     }
+
+                    if ($scope.master === true) {
+                        $element.prop('checked', true);
+                    } else {
+                        $element.prop('checked', false);
+                    }
                 };
 
                 $scope.$on($scope.masterSetOff, function () {
                     $element.prop('indeterminate', false);
-                    $element.attr('checked', false);
+                    $element.prop('checked', false);
                 });
 
                 $scope.masterChange = function () {
