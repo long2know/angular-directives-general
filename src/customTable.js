@@ -231,6 +231,7 @@
                 totalItems: '=',
                 pageNumber: '=',
                 ngChange: '=',
+                callbacks: '=',
                 useRepeat: '@',
                 firstText: '@',
                 previousText: '@',
@@ -272,6 +273,7 @@
                     tableRowNoSelectTemplate,
                     tableCellTemplate,
                     tableComputedCellTemplate,
+                    tableCallbackCellTemplate,
                     tableFootTemplate,
                     tableRowNoRepeatTemplate,
                     tableRowNoSelectNoRepeatTemplate,
@@ -299,6 +301,7 @@
                         $http.get('template/table/customTableRowNoSelect.html', { cache: $templateCache }),
                         $http.get('template/table/customTableCell.html', { cache: $templateCache }),
                         $http.get('template/table/customTableComputedCell.html', { cache: $templateCache }),
+                        $http.get('template/table/customTableCallbackCell.html', { cache: $templateCache }),
                         $http.get('template/table/customTableFoot.html', { cache: $templateCache }),
                         // NoRepeat templates
                         $http.get('template/table/customTableRowNoRepeat.html', { cache: $templateCache }),
@@ -307,21 +310,23 @@
                         $http.get('template/table/customTableComputedCellNoRepeat.html', { cache: $templateCache })
 
                     ]).then(function (templates) {
-                        tableTemplate = templates[0].data;
-                        tableHeadTemplate = templates[1].data;
-                        tableHeadNoSelectTemplate = templates[2].data;
-                        tableHeadSortTemplate = templates[3].data;
-                        tableBodyTemplate = templates[4].data;
-                        tableRowTemplate = templates[5].data;
-                        tableRowNoSelectTemplate = templates[6].data;
-                        tableCellTemplate = templates[7].data;
-                        tableComputedCellTemplate = templates[8].data;
-                        tableFootTemplate = templates[9].data;
+                        var i = 0;
+                        tableTemplate = templates[i++].data;
+                        tableHeadTemplate = templates[i++].data;
+                        tableHeadNoSelectTemplate = templates[i++].data;
+                        tableHeadSortTemplate = templates[i++].data;
+                        tableBodyTemplate = templates[i++].data;
+                        tableRowTemplate = templates[i++].data;
+                        tableRowNoSelectTemplate = templates[i++].data;
+                        tableCellTemplate = templates[i++].data;
+                        tableComputedCellTemplate = templates[i++].data;
+                        tableCallbackCellTemplate = templates[i++].data;
+                        tableFootTemplate = templates[i++].data;
                         // NoRepeat templates
-                        tableRowNoRepeatTemplate = templates[10].data;
-                        tableRowNoSelectNoRepeatTemplate = templates[11].data;
-                        tableCellNoRepeatTemplate = templates[12].data;
-                        tableComputedCellNoRepeatTemplate = templates[13].data;
+                        tableRowNoRepeatTemplate = templates[i++].data;
+                        tableRowNoSelectNoRepeatTemplate = templates[i++].data;
+                        tableCellNoRepeatTemplate = templates[i++].data;
+                        tableComputedCellNoRepeatTemplate = templates[i++].data;
                     });
 
                     return promise;
@@ -347,6 +352,9 @@
                         if (tableColumn.isAnchor) {
                             tableCells += tableComputedCellTemplate.replace('<--BIND-->', binding)
                                 .replace('<--SREF-->', tableColumn.srefBinding);
+                        } else if (tableColumn.callback) {
+                            tableCells += tableCallbackCellTemplate.replace('<--BIND-->', binding)
+                                .replace('<--CALLBACK-->', tableColumn.callback);
                         }
                         else {
                             var filter = tableColumn.filter ? ' | ' + tableColumn.filter : '';
@@ -566,6 +574,12 @@
         $templateCache.put("template/table/customTableCellNoRepeat.html",
             "<td ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'</td>"
             );
+
+        $templateCache.put("template/table/customTableCallbackCell.html",
+          "<td style=\"white-space:nowrap;\">\n" +
+          "  <a class=\"link\" ng-bind=\"<--BIND-->\" ng-click=\"callbacks.<--CALLBACK-->\"></a>\n" +
+          "</td>"
+          );
 
         $templateCache.put("template/table/customTableComputedCell.html",
             "<td style=\"white-space:nowrap;\">\n" +

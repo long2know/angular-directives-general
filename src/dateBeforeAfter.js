@@ -26,7 +26,10 @@
             link: function (scope, el, attrs, ctrl) {
                 var isInclusive = attrs.dateOrEquals ? scope.$eval(attrs.dateOrEquals) : false,
                     validate = function (val1, val2) {
-                        if (!val1 || !val2) return;
+                        if ((val1 === undefined || val2 === undefined) || (!val1 || !val2)) {
+                            ctrl.$setValidity('dateBefore', true);
+                            return;
+                        };
                         var isArray = val2 instanceof Array;
                         var isValid = true;
                         var date1 = new Date(val1);
@@ -68,7 +71,10 @@
             link: function (scope, el, attrs, ctrl) {
                 var isInclusive = attrs.dateOrEquals ? scope.$eval(attrs.dateOrEquals) : false,
                     validate = function (val1, val2) {
-                        if (!val1 || !val2) return;
+                        if ((val1 === undefined || val2 === undefined) || (!val1 || !val2)) {
+                            ctrl.$setValidity('dateAfter', true);
+                            return;
+                        };
                         var isArray = val2 instanceof Array;
                         var isValid = true;
                         var date1 = new Date(val1);
