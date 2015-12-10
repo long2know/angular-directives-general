@@ -1,0 +1,86 @@
+customselect > .btn-group:not(.single) {
+    min-width: 150px;
+}
+
+customselect > .btn-group.single {
+    min-width: 75px;
+}
+
+customselect .btn {
+    width: 100%;
+    background-color: #FFF;
+}
+
+    customselect.btn.has-error {
+        border: 1px solid #a94442 !important;
+        color: #db524b;
+    }
+
+.custom-select-popup {
+    max-height: 400px;
+    min-width: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+    .custom-select-popup > li > .form-group > input {
+        max-width: none;
+        width: 100%;
+    }
+
+    .custom-select-popup > li > .form-group > ul {
+        max-width: 330px;
+    }
+
+    .custom-select-popup .filter {
+        width: 100%;
+    }
+
+        .custom-select-popup .filter > input {
+            width: 99%;
+            max-width: none;
+        }
+
+        .custom-select-popup .filter .glyphicon {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+.custom-select-popup {
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+customselect > .btn-group > button {
+    padding-right: 20px;
+}
+
+    customselect > .btn-group > button > .caret {
+        right: 5px;
+        top: 45%;
+        position: absolute;
+    }
+
+customselect > .btn-group:not(.dropup) > button > .caret {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid black;
+}
+
+.custom-select-popup > li:not(.filter-container) {
+    padding-right: 10px;
+}
+
+.custom-select-popup > li > a {
+    padding: 3px 10px;
+    cursor: pointer;
+}
+    .custom-select-popup > li > a i {
+        margin-right: 4px;
+    }
+
+
+.glyphicon-none:before {
+    content: "\e013";
+    color: transparent !important;
+}

@@ -1,0 +1,65 @@
+<html>    
+    <head>
+        <title>Customselect Demo</title>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-animate.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-loader.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-sanitize.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-cookies.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-touch.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular-resource.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap-tpls.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.13/angular-ui-router.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui-ieshiv.min.js"></script>
+        <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <script type='text/javascript' src="script.js"></script>
+        <script type='text/javascript' src="../../src/customselect.js"></script>
+    </head>
+    
+    <body ng-app="myApp">
+        <div ng-include="'menu.html'"></div>
+        <div ui-view="main"></div>
+        <script type="text/ng-template" id="menu.html">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <span class="navbar-brand">Our Menu</span>
+                    </div>
+                </div>
+            </nav>
+        </script>
+        <script type="text/ng-template" id="state1.html">
+            <div>
+                <table class="table-striped table-hover custom-table">
+                    <thead>
+                        <tr>
+                            <th>Dealer Code</th>
+                            <th>Dealer Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="r in vm.records track by $index">
+                            <td ng-bind="r.name"></td>
+                            <td ng-bind="r.code"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <form name="vm.myForm" novalidate>
+                    <div class="form-group" ng-class="{ 'has-error': vm.myForm.employees.$invalid && (vm.myForm.employees.$dirty || vm.isSubmitted) }">
+                        <customselect name="employees" class="input-xlarge multiselect" ng-model="vm.tempHolder" options="e.key as e.value for e in vm.getStuff($viewValue)"
+                                      header="Select Dealer(s)" multiple="true" append-to-body="true" on-select="vm.addEmployees($items)" ng-required="true"
+                                      enable-filter="true" filter-placeholder="Type at least one character to search.." custom-button-click="vm.getEmployeesByMarket()" custom-button-text="Add All Dealers in Market" custom-button-show="vm.market !== undefined">
+                        </customselect>
+                        <div ng-if="vm.myForm.employees.$invalid && (vm.myForm.employees.$dirty || vm.isSubmitted)">
+                            <small id="employeesReq" class="error" ng-show="vm.myForm.employees.$error.required">You must select at least one employee.</small>
+                        </div>
+                    </div>
+            </form>
+        </script>
+    </body>
+</html>

@@ -20,7 +20,7 @@
             ]);
     }
 
-    var multiselectParser = function ($parse) {
+    var customselectParser = function ($parse) {
         //                      00000111000000000000022200000000000000003333333333333330000000000044000
         var TYPEAHEAD_REGEXP = /^\s*([\s\S]+?)(?:\s+as\s+([\s\S]+?))?\s+for\s+(?:([\$\w][\$\w\d]*))\s+in\s+([\s\S]+?)$/;
 
@@ -44,7 +44,7 @@
         };
     };
 
-    var multiselect = function ($parse, $timeout, $filter, $document, $compile, $window, $position, optionParser) {
+    var customselect = function ($q, $timeout, $parse, $filter, $document, $window, $position, $compile, optionParser) {
         return {
             restrict: 'EA',
             require: ['ngModel', '?^form'],
@@ -66,170 +66,123 @@
                     selectLimit = attrs.selectLimit ? originalScope.$eval(attrs.selectLimit) : 0,
                     useFiltered = attrs.selectLimitUseFiltered ? originalScope.$eval(attrs.selectLimitUseFiltered) : true,
                     filterPlaceholder = attrs.filterPlaceholder ? attrs.filterPlaceholder : "Filter ..",
-                    appendToBody = attrs.appendToBody ? originalScope.$eval(attrs.appendToBody) : false,
                     required = false,
                     lastSelectedLabel = '',
                     scope = originalScope.$new(true),
                     changeHandler = attrs.change || angular.noop,
-                    popUpEl = angular.element('<multiselect-popup></multiselect-popup>'),
-                    popupId = 'multiselect-' + scope.$id + '-' + Math.floor(Math.random() * 10000),
-                    timeoutEventPromise,
+                    onSelectCallback = $parse(attrs.onSelect),
+                    onCustomCallback = $parse(attrs.customButtonClick),
+                    hasCustomButton = attrs.customButtonText != '',
+                    customButtonText = attrs.customButtonText ? attrs.customButtonText : 'Click Me',
+                    customButtonShow = $parse(attrs.customButtonShow),
+                    isLoadingSetter = $parse(attrs.loading).assign || angular.noop,
+                    isNoResultsSetter = $parse(attrs.noResults).assign || angular.noop,
+                    appendToBody = attrs.appendToBody ? originalScope.$eval(attrs.appendToBody) : false,
+                    focusFirst = originalScope.$eval(attrs.typeaheadFocusFirst) !== false,
+                    //If input matches an item of the list exactly, select it automatically
+                    selectOnExact = attrs.typeaheadSelectOnExact ? originalScope.$eval(attrs.typeaheadSelectOnExact) : false,
                     eventDebounceTime = 200,
-
+                    waitTime = 100,
+                    timeoutEventPromise,
+                    timeoutPromise,
+                    minLength = 1,
+                    itemsSelected = false,
+                    popUpEl = angular.element('<customselect-popup></customselect-popup>'),
                     isChecked = function (i) {
                         return i.checked === true;
                     },
-
                     getFilteredItems = function () {
                         var filteredItems = $filter("filter")(scope.items, scope.searchText);
                         return filteredItems;
                     },
-
-                    getFirstSelectedLabel = function () {
-                        for (var i = 0; i < scope.items.length; i++) {
-                            if (scope.items[i].checked) {
-                                return scope.items[i].label;
-                            }
-                        }
-                        return header;
+                    popupId = 'customselect-' + scope.$id + '-' + Math.floor(Math.random() * 10000),
+                    resetMatches = function () {
+                        scope.items = [];
+                        //setModelValue(isMultiple);
+                        scope.activeIdx = -1;
                     },
-                    canCheck = function () {
-                        var belowLimit = false;
-                        var atLimit = false;
-                        if (selectLimit === 0 || !isMultiple) {
-                            belowLimit = true;
-                            atLimit = false;
-                        } else {
-                            var checkedItems = scope.items.filter(isChecked);
-                            atLimit = checkedItems.length === selectLimit;
-                            belowLimit = checkedItems.length < selectLimit;
-                        }
-                        scope.maxSelected = atLimit;
-                        return atLimit || belowLimit;
-                    },
-                    getHeaderText = function () {
-                        var localHeader = header;
-                        if (isEmpty(modelCtrl.$modelValue)) return scope.header = localHeader;
-                        if (isMultiple) {
-                            var isArray = modelCtrl.$modelValue instanceof Array;
-                            if (isArray && modelCtrl.$modelValue.length > 1) {
-                                localHeader = modelCtrl.$modelValue.length + ' ' + selectedHeader;
+                    scheduleSearchWithTimeout = function (inputValue) {
+                        if (minLength === 0 || inputValue && inputValue.length >= minLength) {
+                            if (waitTime > 0) {
+                                cancelPreviousTimeout();
+                                timeoutPromise = $timeout(function () {
+                                    getMatchesAsync(inputValue);
+                                }, waitTime);
                             } else {
-                                localHeader = getFirstSelectedLabel();
+                                getMatchesAsync(inputValue);
                             }
                         } else {
-                            //var local = {};
-                            //local[parserResult.itemName] = parseInt(modelCtrl.$modelValue);
-                            //localHeader = parserResult.viewMapper(local);
-                            localHeader = getFirstSelectedLabel();
+                            isLoadingSetter(originalScope, false);
+                            scope.loading = false;
+                            cancelPreviousTimeout();
+                            resetMatches();
                         }
-                        scope.header = localHeader;
                     },
-                    isEmpty = function (obj) {
-                        if (!obj) return true;
-                        if (!isComplex && obj) return false;
-                        if (obj.length && obj.length > 0) return false;
-                        for (var prop in obj) if (obj[prop]) return false;
-                        return true;
-                    },
-                    parseModel = function () {
-                        scope.items.length = 0;
-                        var model = parserResult.source(originalScope);
-                        if (!angular.isDefined(model)) return;
-                        isArray = modelCtrl.$modelValue instanceof Array;
-                        for (var i = 0; i < model.length; i++) {
-                            var local = {};
-                            local[parserResult.itemName] = model[i];
-                            var value = parserResult.modelMapper(local)
-                            var isChecked = isArray ?
-                                (modelCtrl.$modelValue.indexOf(value.toString()) != -1 || modelCtrl.$modelValue.indexOf(value) != -1) :
-                                (!isEmpty(modelCtrl.$modelValue) && modelCtrl.$modelValue == value);
-                            var item = {
-                                label: parserResult.viewMapper(local),
-                                model: model[i],
-                                checked: isChecked
-                            };
-                            scope.items.push(item);
+                    cancelPreviousTimeout = function () {
+                        if (timeoutPromise) {
+                            $timeout.cancel(timeoutPromise);
                         }
-                        getHeaderText();
                     },
-                    selectSingle = function (item) {
-                        if (item.checked) {
-                            scope.uncheckAll();
-                        } else {
-                            scope.uncheckAll();
-                            item.checked = true;
-                        }
-                        setModelValue(false);
+                    getMatchId = function (index) {
+                        return popupId + '-option-' + index;
                     },
-                    selectMultiple = function (item) {
-                        item.checked = !item.checked;
-                        if (!canCheck()) {
-                            item.checked = false;
-                        }
-                        setModelValue(true);
-                    },
-                    setModelValue = function (isMultiple) {
-                        var value;
-                        if (isMultiple) {
-                            value = [];
-                            angular.forEach(scope.items, function (item) {
-                                // If map simple values
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value.push(item.model);
-                                    } else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value.push(parserResult.modelMapper(local));
-                                    }
-                                }
-                            })
-                        } else {
-                            angular.forEach(scope.items, function (item) {
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value = item.model;
-                                        return false;
-                                    }
-                                    else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value = parserResult.modelMapper(local);
-                                        return false;
-                                    }
-                                }
-                            })
-                        }
-                        modelCtrl.$setViewValue(value);
-                    },
+                    getMatchesAsync = function (inputValue) {
+                        var locals = { $viewValue: inputValue };
+                        isLoadingSetter(originalScope, true);
+                        scope.loading = true;
+                        scope.isNoResults = false;
+                        isNoResultsSetter(originalScope, false);
+                        $q.when(parserResult.source(originalScope, locals)).then(function (matches) {
+                            //it might happen that several async queries were in progress if a user were typing fast
+                            //but we are interested only in responses that correspond to the current view value
+                            var onCurrentRequest = (inputValue === scope.searchText.label);
+                            if (onCurrentRequest) {
+                                if (matches && matches.length > 0) {
+                                    isNoResultsSetter(originalScope, false);
+                                    scope.isNoResults = false;
+                                    scope.items.length = 0;
 
-                    markChecked = function (newVal) {
-                        if (!angular.isArray(newVal)) {
-                            angular.forEach(scope.items, function (item) {
-                                if (angular.equals(item.model, newVal)) {
-                                    item.checked = true;
-                                    return false;
-                                }
-                            });
-                        } else {
-                            angular.forEach(newVal, function (i) {
-                                angular.forEach(scope.items, function (item) {
-                                    if (angular.equals(item.model, i)) {
-                                        item.checked = true;
+                                    //transform labels
+                                    for (var i = 0; i < matches.length; i++) {
+                                        locals[parserResult.itemName] = matches[i];
+                                        scope.items.push({
+                                            id: getMatchId(i),
+                                            label: parserResult.viewMapper(scope, locals),
+                                            model: matches[i]
+                                        });
                                     }
-                                });
-                            });
-                        }
-                    },
 
-                    // recalculate actual position and set new values to scope
-                    // after digest loop is popup in right position
-                    recalculatePosition = function () {
-                        scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
-                        scope.position.top += $popup.prop('offsetHeight');
-                    },
+                                    scope.query = inputValue;
+                                    //position pop-up with matches - we need to re-calculate its position each time we are opening a window
+                                    //with matches as a pop-up might be absolute-positioned and position of an input might have changed on a page
+                                    //due to other elements being rendered
+                                    recalculatePosition();
 
+                                    element.attr('aria-expanded', true);
+
+                                    //Select the single remaining option if user input matches
+                                    if (selectOnExact && scope.items.length === 1 && inputIsExactMatch(inputValue, 0)) {
+                                        scope.select(scope.items[0]);
+                                    }
+                                } else {
+                                    resetMatches();
+                                    isNoResultsSetter(originalScope, true);
+                                    scope.isNoResults = true;
+                                }
+                            }
+                            if (onCurrentRequest) {
+                                isLoadingSetter(originalScope, false);
+                                scope.loading = false;
+
+                            }
+                        }, function () {
+                            resetMatches();
+                            isLoadingSetter(originalScope, false);
+                            isNoResultsSetter(originalScope, true);
+                            scope.loading = false;
+                            scope.isNoResults = true;
+                        });
+                    },
                     fireRecalculating = function () {
                         if (!scope.moveInProgress) {
                             scope.moveInProgress = true;
@@ -250,7 +203,136 @@
                             scope.moveInProgress = false;
                             scope.$digest();
                         }, eventDebounceTime);
-                    };
+                    },
+
+                    // recalculate actual position and set new values to scope
+                    // after digest loop is popup in right position
+                recalculatePosition = function () {
+                    scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
+                    scope.position.top += $popup.prop('offsetHeight');
+                },
+
+                getFirstSelectedLabel = function () {
+                    for (var i = 0; i < scope.items.length; i++) {
+                        if (scope.items[i].checked) {
+                            return scope.items[i].label;
+                        }
+                    }
+                    return header;
+                },
+
+                canCheck = function () {
+                    var belowLimit = false;
+                    var atLimit = false;
+                    if (selectLimit === 0 || !isMultiple) {
+                        belowLimit = true;
+                        atLimit = false;
+                    } else {
+                        var checkedItems = scope.items.filter(isChecked);
+                        atLimit = checkedItems.length === selectLimit;
+                        belowLimit = checkedItems.length < selectLimit;
+                    }
+                    scope.maxSelected = atLimit;
+                    return atLimit || belowLimit;
+                },
+
+                //getHeaderText = function () {
+                //    var localHeader = header;
+                //    if (isEmpty(modelCtrl.$modelValue)) return scope.header = localHeader;
+                //    if (isMultiple) {
+                //        var isArray = modelCtrl.$modelValue instanceof Array;
+                //        if (isArray && modelCtrl.$modelValue.length > 1) {
+                //            localHeader = modelCtrl.$modelValue.length + ' ' + selectedHeader;
+                //        } else {
+                //            localHeader = getFirstSelectedLabel();
+                //        }
+                //    } else {
+                //        //var local = {};
+                //        //local[parserResult.itemName] = parseInt(modelCtrl.$modelValue);
+                //        //localHeader = parserResult.viewMapper(local);
+                //        localHeader = getFirstSelectedLabel();
+                //    }
+                //    scope.header = localHeader;
+                //},
+
+                isEmpty = function (obj) {
+                    if (!obj) return true;
+                    if (!isComplex && obj) return false;
+                    if (obj.length && obj.length > 0) return false;
+                    for (var prop in obj) if (obj[prop]) return false;
+                    return true;
+                },
+
+                selectSingle = function (item) {
+                    if (item.checked) {
+                        scope.uncheckAll();
+                    } else {
+                        scope.uncheckAll();
+                        item.checked = true;
+                    }
+                    //setModelValue(false);
+                },
+
+                selectMultiple = function (item) {
+                    item.checked = !item.checked;
+                    if (!canCheck()) {
+                        item.checked = false;
+                    }
+                    //setModelValue(true);
+                },
+
+                setModelValue = function (isMultiple) {
+                    var value;
+                    if (isMultiple) {
+                        value = [];
+                        angular.forEach(scope.items, function (item) {
+                            // If map simple values
+                            if (item.checked) {
+                                if (isComplex) {
+                                    value.push(item.model);
+                                } else {
+                                    var local = {};
+                                    local[parserResult.itemName] = item.model;
+                                    value.push(parserResult.modelMapper(local));
+                                }
+                            }
+                        })
+                    } else {
+                        angular.forEach(scope.items, function (item) {
+                            if (item.checked) {
+                                if (isComplex) {
+                                    value = item.model;
+                                    return false;
+                                }
+                                else {
+                                    var local = {};
+                                    local[parserResult.itemName] = item.model;
+                                    value = parserResult.modelMapper(local);
+                                    return false;
+                                }
+                            }
+                        })
+                    }
+                    modelCtrl.$setViewValue(value);
+                },
+                markChecked = function (newVal) {
+                    if (!angular.isArray(newVal)) {
+                        angular.forEach(scope.items, function (item) {
+                            if (angular.equals(item.model, newVal)) {
+                                item.checked = true;
+                                return false;
+                            }
+                        });
+                    } else {
+                        angular.forEach(newVal, function (i) {
+                            angular.forEach(scope.items, function (item) {
+                                if (angular.equals(item.model, i)) {
+                                    item.checked = true;
+                                }
+                            });
+                        });
+                    }
+                };
 
                 scope.items = [];
                 scope.header = header;
@@ -261,10 +343,13 @@
                 scope.enableFilter = enableFilter;
                 scope.searchText = { label: '' };
                 scope.isAutoFocus = isAutoFocus;
+                scope.scheduleSearchWithTimeout = scheduleSearchWithTimeout;
                 scope.appendToBody = appendToBody;
                 scope.moveInProgress = false;
                 scope.popupId = popupId;
                 scope.recalculatePosition = recalculatePosition;
+                scope.customButtonShow = customButtonShow();
+                scope.customButtonText = customButtonText;
 
                 originalScope.$on('$destroy', function () {
                     scope.$destroy();
@@ -296,21 +381,21 @@
                     scope.disabled = newVal;
                 });
 
+                //watch show state state
+                if (hasCustomButton) {
+                    scope.$watch(function () {
+                        return $parse(attrs.customButtonShow)(originalScope);
+                    }, function (newVal) {
+                        scope.customButtonShow = newVal;
+                    });
+                }
+
                 //watch single/multiple state for dynamically change single to multiple
                 scope.$watch(function () {
                     return $parse(attrs.multiple)(originalScope);
                 }, function (newVal) {
                     isMultiple = newVal || false;
                 });
-
-                //watch option changes for options that are populated dynamically
-                scope.$watch(function () {
-                    return parserResult.source(originalScope);
-                }, function (newVal) {
-                    if (angular.isDefined(newVal)) {
-                        parseModel();
-                    }
-                }, true);
 
                 ////watch model change  --> This has an issue in that it seems that all models are updated to the same value
                 scope.$watch(function () {
@@ -325,11 +410,12 @@
                         // So, triggering it manually should be redundant
                         //scope.$eval(changeHandler);
                     }
-                    getHeaderText();
+                    //getHeaderText();
                     modelCtrl.$setValidity('required', scope.valid());
                 }, true);
 
-                parseModel();
+                //parseModel();
+
                 var $popup = $compile(popUpEl)(scope);
                 element.append($popup);
                 $timeout(function () { recalculatePosition(); }, 100);
@@ -337,7 +423,8 @@
                 scope.valid = function validModel() {
                     if (!required) return true;
                     var value = modelCtrl.$modelValue;
-                    return (angular.isArray(value) && value.length > 0) || (!angular.isArray(value) && value != null);
+                    var isValid = itemsSelected || (angular.isArray(value) && value.length > 0) || (!angular.isArray(value) && value != null);
+                    return isValid;
                 };
 
                 scope.checkAll = function () {
@@ -365,7 +452,7 @@
                         }
                         scope.maxSelected = true;
                     }
-                    setModelValue(true);
+                    //setModelValue(true);
                 };
 
                 scope.uncheckAll = function () {
@@ -375,7 +462,7 @@
                     });
                     canCheck();
                     if (isMultiple) {
-                        setModelValue(true);
+                        //setModelValue(true);
                     }
                 };
 
@@ -388,20 +475,41 @@
                     }
                 };
 
+                scope.acceptSelection = function () {
+                    setModelValue(isMultiple);
+                    modelCtrl.$setValidity('required', scope.valid());
+                    if (modelCtrl.$modelValue && modelCtrl.$modelValue.length > 0) {
+                        itemsSelected = true;
+                        var items = scope.items.filter(isChecked);
+                        onSelectCallback(originalScope, { $items: items });
+                        scope.clearFilter();
+                        scope.toggleSelect();
+                    }
+                };
+
+                scope.customClick = function () {
+                    itemsSelected = true;
+                    onCustomCallback(originalScope);
+                    modelCtrl.$setValidity('required', scope.valid());
+                    scope.clearFilter();
+                    scope.toggleSelect();
+                }
+
                 scope.clearFilter = function () {
+                    resetMatches();
                     scope.searchText.label = '';
                 };
             }
         };
     };
 
-    var multiselectPopup = function ($document) {
+    var customselectPopup = function ($document) {
         return {
             restrict: 'E',
             replace: true,
-            require: ['^ngModel', '?^form'],
-            templateUrl: 'template/multiselect/multiselectPopup.html',
+            templateUrl: 'template/customselect/customselectPopup.html',
             link: function (scope, element, attrs, ctrls) {
+
                 var $dropdown = element.find(".dropdown-menu");
                 $dropdown.attr("id", scope.popupId);
 
@@ -432,7 +540,7 @@
                     };
 
                 scope.clickHandler = clickHandler;
-                scope.isVisible = false;
+
                 scope.toggleSelect = function () {
                     if (element.hasClass('open') || scope.isOpen) {
                         element.removeClass('open');
@@ -456,21 +564,6 @@
                     var ulElement = element.find("ul:first");
                     var dropdownHeight = ulElement.height();
                     var dropdownWidth = ulElement.width();
-
-                    // If we have no height/width, the element isn't visisble - we can clone it and show it off screen to get
-                    // its visibile dimensions. Alternatively, we could just make the element visible and then adjust,
-                    // but this might result in some screen flicker... who knows?
-                    if (dropdownHeight <= 0 && dropdownWidth <= 0) {
-                        var clonedElement = $(ulElement)
-                            .clone()
-                            .css('position', 'absolute')
-                            .css('left', '-10000px')
-                            .appendTo(parent)
-                            .removeClass('ng-hide')
-                            .show();
-                        var dropdownHeight = clonedElement.height();
-                        var dropdownWidth = clonedElement.width();
-                    }
 
                     // Determine if outside of visible range when dropping down
                     var elementTop = element.offset().top + element.height() - windowScrollTop;
@@ -506,22 +599,30 @@
     };
 
     angular.module("long2know").run(["$templateCache", function ($templateCache) {
-        $templateCache.put("template/multiselect/multiselectPopup.html",
+        $templateCache.put("template/customselect/customselectPopup.html",
             "<div class=\"btn-group\" ng-class=\"{ dropup: dropup, single: !multiple }\">" +
                 "<button class=\"btn btn-default dropdown-toggle\" ng-click=\"toggleSelect()\" ng-disabled=\"disabled\" ng-class=\"{'has-error': !valid()}\">" +
                     "<span class=\"pull-left\" ng-bind=\"header\"></span>" +
                     "<span class=\"caret pull-right\"></span>" +
                 "</button>" +
-                "<ul class=\"dropdown-menu multi-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {}}[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
+                "<ul class=\"dropdown-menu custom-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {}}[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
                     "<li ng-if=\"enableFilter\" class=\"filter-container\">" +
                         "<div class=\"form-group has-feedback filter\">" +
-                            "<input class=\"form-control\" type=\"text\" ng-model=\"searchText.label\" placeholder=\"{{ filterPlaceholder }}\" />" +
+                            "<input class=\"form-control\" type=\"text\" ng-model=\"searchText.label\" ng-change=\"scheduleSearchWithTimeout(searchText.label)\" placeholder=\"{{ filterPlaceholder }}\" />" +
                             "<span class=\"glyphicon glyphicon-remove-circle form-control-feedback\" ng-click=\"clearFilter()\"></span>" +
                         "</div>" +
+                            "<i ng-show=\"loading\" class=\"glyphicon glyphicon-refresh\"></i>" +
+                            "<div ng-show=\"isNoResults\">" +
+                                "<i class=\"glyphicon glyphicon-remove\"></i> No Results Found" +
+                            "</div>" +
+                    "</li>" +
+                    "<li ng-if=\"customButtonShow\">" +
+                        "<button class=\"btn-link btn-small\" ng-click=\"customClick()\"><i class=\"icon-remove\"></i> {{ customButtonText }}</button>" +
                     "</li>" +
                     "<li ng-show=\"multiple\">" +
                         "<button class=\"btn-link btn-small\" ng-click=\"checkAll()\"><i class=\"icon-ok\"></i> Check all</button>" +
                         "<button class=\"btn-link btn-small\" ng-click=\"uncheckAll()\"><i class=\"icon-remove\"></i> Uncheck all</button>" +
+                        "<button class=\"btn-link btn-small\" ng-click=\"acceptSelection()\"><i class=\"icon-remove\"></i> Add Selected</button>" +
                     "</li>" +
                     "<li ng-show=\"maxSelected\">" +
                         "<small>Selected maximum of </small><small ng-bind=\"selectLimit\"></small>" +
@@ -537,19 +638,19 @@
             "</div>");
     }]);
 
-    multiselectParser.$inject = ['$parse'];
-    multiselect.$inject = ['$parse', '$timeout', '$filter', '$document', '$compile', '$window', '$uibPosition', 'multiselectParser'];
-    multiselectPopup.$inject = ['$document'];
+    customselectParser.$inject = ['$parse'];
+    customselect.$inject = ['$q', '$timeout', '$parse', '$filter', '$document', '$window', '$uibPosition', '$compile', 'customselectParser'];
+    customselectPopup.$inject = ['$document'];
 
     angular
         .module("long2know.services")
-        .factory('multiselectParser', multiselectParser);
+        .factory('customselectParser', customselectParser);
 
     angular
         .module('long2know.directives')
-        .directive('multiselectPopup', multiselectPopup);
+        .directive('customselectPopup', customselectPopup);
 
     angular
         .module('long2know.directives')
-        .directive('multiselect', multiselect);
+        .directive('customselect', customselect);
 })()
