@@ -20,7 +20,7 @@
             ]);
     }
 
-    var customTableController = function ($scope, $attrs, $parse, $timeout, $animate, $log) {
+   var customTableController = function ($scope, $attrs, $parse, $timeout, $animate, $log) {
         var
             tblCtrl = this,
             isSorting = false,
@@ -30,6 +30,7 @@
             init = function () {
                 tblCtrl.ngModel = $scope.ngModel;
                 $scope.$watchCollection('ngModel', function () {
+                    tblCtrl.ngModel = $scope.ngModel;
                     start = new Date().getTime();
                     if (tblCtrl.useRepeat === false) {
                         redrawTable();
@@ -86,7 +87,7 @@
                 //$scope.element.find("tbody").html(tableRows);
                 start = new Date().getTime();
                 var tbody = $scope.element.find("tbody")[0];
-                
+
                 // Attempting to speed up the insert
                 //var display = tbody.style.display || 'block';
                 //var parent = tbody.parentNode;
@@ -159,7 +160,7 @@
         tblCtrl.init = init;
 
         tblCtrl.isSorting = function (name) {
-            return tblCtrl.sortBy !== name;
+            return tblCtrl.sortBy !== name && name !== '';
         };
 
         tblCtrl.isSortAsc = function (name) {
@@ -179,6 +180,8 @@
             tblCtrl.sortBy = headerName;
             $scope.$emit("tableSortHeaderClicked", { sortBy: tblCtrl.sortBy, sortDirection: tblCtrl.sortDirection });
             if (tblCtrl.clientSort) {
+                $scope.sortBy = tblCtrl.sortBy;
+                $scope.sortDirection = tblCtrl.sortDirection;
                 sort(tblCtrl.ngModel, tblCtrl.sortBy, tblCtrl.sortDirection, false);
                 if (tblCtrl.useRepeat === false) {
                     //redrawTable(); --> watchCollection should pickup
@@ -258,6 +261,7 @@
             link: function (scope, element, attrs, ctrls) {
                 var tblCtrl = ctrls[0], ngModelCtrl = ctrls[1];
                 // Setup configuration parameters
+                scope.vm = scope.$parent;
                 var showSelectCheckbox = angular.isDefined(attrs.showSelectCheckbox) ? scope.$parent.$eval(attrs.showSelectCheckbox) : tableConfig.showSelectCheckbox,
                     showSelectAll = angular.isDefined(attrs.showSelectAll) ? scope.$parent.$eval(attrs.showSelectAll) : tableConfig.showSelectAll,
                     showSort = angular.isDefined(attrs.showSort) ? scope.$parent.$eval(attrs.showSort) : tableConfig.showSort,
@@ -348,6 +352,9 @@
                         var binding = tableColumn.isComputed ?
                             tableColumn.binding.replace(/r\./g, recordName + ".") :
                             recordName + "." + tableColumn.binding;
+                        if (tableColumn.callback && tableColumn.isNotBound) {
+                            binding = "'" + tableColumn.binding + "'";
+                        };
                         binding = tableColumn.isWatched === false ? "::(" + binding + ")" : binding;
                         if (tableColumn.isAnchor) {
                             tableCells += tableComputedCellTemplate.replace('<--BIND-->', binding)
@@ -534,46 +541,52 @@
 
     angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/table/customTable.html",
-            "<table <--STICKY--> class=\"table-striped table-hover custom-table\">\n" +
-            "  <--HEAD-->\n" +
-            "  <--BODY-->\n" +
-            "</table>" +
-            "<--FOOT-->");
+          "<table <--STICKY--> class=\"table-striped table-hover custom-table\">\n" +
+          "  <--HEAD-->\n" +
+          "  <--BODY-->\n" +
+          "</table>" +
+          "<--FOOT-->");
 
         $templateCache.put("template/table/customTableBody.html",
-            "<tbody>\n" +
-            "  <--ROWS-->\n" +
-            "</tbody>");
+          "<tbody>\n" +
+          "  <--ROWS-->\n" +
+          "</tbody>");
 
         $templateCache.put("template/table/customTableRow.html",
-            "<tr ng-repeat='<--RECORD--> in ngModel track by <--RECORDKEY-->' ng-class=\"{ 'is-error': <--RECORD-->.isError }\" <--REPEATFINISH-->>\n" +
-            "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
-            "  <--CELLS-->\n" +
-            "</tr>");
+          "<tr ng-repeat='<--RECORD--> in ngModel track by <--RECORDKEY-->' ng-class=\"{ 'is-error': <--RECORD-->.isError }\" <--REPEATFINISH-->>\n" +
+          "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
+          "  <--CELLS-->\n" +
+          "</tr>");
 
         $templateCache.put("template/table/customTableRowNoRepeat.html",
-            "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" ng-class=\"{ 'is-error': <--RECORD-->.isError }\">\n" +
-            "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
-            "  <--CELLS-->\n" +
-            "</tr>");
+          "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" ng-class=\"{ 'is-error': <--RECORD-->.isError }\">\n" +
+          "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
+          "  <--CELLS-->\n" +
+          "</tr>");
 
         $templateCache.put("template/table/customTableRowNoSelect.html",
-            "<tr ng-repeat='<--RECORD--> in ngModel track by <--RECORDKEY-->' <>\n" +
-            "  <--CELLS-->\n" +
-            "</tr>");
+          "<tr ng-repeat='<--RECORD--> in ngModel track by <--RECORDKEY-->' <>\n" +
+          "  <--CELLS-->\n" +
+          "</tr>");
 
         $templateCache.put("template/table/customTableRowNoSelectNoRepeat.html",
-            "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\">\n" +
-            "  <--CELLS-->\n" +
-            "</tr>");
+          "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\">\n" +
+          "  <--CELLS-->\n" +
+          "</tr>");
 
         $templateCache.put("template/table/customTableCell.html",
-            "<td ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'</td>"
-            );
+          "<td ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'</td>"
+          );
 
         $templateCache.put("template/table/customTableCellNoRepeat.html",
-            "<td ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'</td>"
-            );
+          "<td ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'</td>"
+          );
+
+        $templateCache.put("template/table/customTableComputedCell.html",
+          "<td style=\"white-space:nowrap;\">\n" +
+          "  <a ui-sref=\"<--SREF-->\" class=\"link\" ng-bind=\"<--BIND-->\"></a>\n" +
+          "</td>"
+          );
 
         $templateCache.put("template/table/customTableCallbackCell.html",
           "<td style=\"white-space:nowrap;\">\n" +
@@ -581,50 +594,44 @@
           "</td>"
           );
 
-        $templateCache.put("template/table/customTableComputedCell.html",
-            "<td style=\"white-space:nowrap;\">\n" +
-            "  <a ui-sref=\"<--SREF-->\" class=\"mtnLink\" ng-bind=\"<--BIND-->\"></a>\n" +
-            "</td>"
-            );
-
         $templateCache.put("template/table/customTableComputedCellNoRepeat.html",
-            "<td style=\"white-space:nowrap;\">\n" +
-            "  <a ui-sref=\"<--SREF-->\" class=\"mtnLink\"><--BIND--></a>\n" +
-            "</td>"
-            );
+          "<td style=\"white-space:nowrap;\">\n" +
+          "  <a ui-sref=\"<--SREF-->\" class=\"link\"><--BIND--></a>\n" +
+          "</td>"
+          );
 
         $templateCache.put("template/table/customTableHead.html",
-            "<thead>\n" +
-            "  <tr <--STICKYHEAD-->>\n" +
-            "    <th class=\"th-checkbox\">\n" +
-            "      <tri-state-checkbox class=\"toggle-all\" checkboxes=\"ngModel\" master-set-off=\"masterSetOff\" master-click=\"tblCtrl.masterClick()\" child-click=\"childClick\"></tri-state-checkbox>\n" +
-            "    </th>\n" +
-            "    <th bindonce ng-repeat=\"c in tableColumns track by $index\"<--SORT-->" +
-            "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\"><span ng-bind=\"c.name\">\n" +
-            "    </th>\n" +
-            "  </tr>\n" +
-            "</thead>"
-            );
+          "<thead>\n" +
+          "  <tr <--STICKYHEAD-->>\n" +
+          "    <th class=\"th-checkbox\">\n" +
+          "      <tri-state-checkbox class=\"toggle-all\" checkboxes=\"ngModel\" master-set-off=\"masterSetOff\" master-click=\"tblCtrl.masterClick()\" child-click=\"childClick\"></tri-state-checkbox>\n" +
+          "    </th>\n" +
+          "    <th bindonce ng-repeat=\"c in tableColumns track by $index\"<--SORT-->" +
+          "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" ng-class=\"c.style\"><span ng-bind=\"c.name\">\n" +
+          "    </th>\n" +
+          "  </tr>\n" +
+          "</thead>"
+        );
 
         $templateCache.put("template/table/customTableHeadNoSelect.html",
-            "<thead>\n" +
-            "  <tr <--STICKYHEAD-->>\n" +
-            "    <th bindonce ng-repeat=\"c in tableColumns track by $index\"<--SORT-->" +
-            "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\"><span ng-bind=\"c.name\">\n" +
-            "    </th>\n" +
-            "  </tr>\n" +
-            "</thead>"
-            );
+          "<thead>\n" +
+          "  <tr <--STICKYHEAD-->>\n" +
+          "    <th bindonce ng-repeat=\"c in tableColumns track by $index\"<--SORT-->" +
+          "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" ng-class=\"c.style\"><span ng-bind=\"c.name\">\n" +
+          "    </th>\n" +
+          "  </tr>\n" +
+          "</thead>"
+        );
 
         $templateCache.put("template/table/customTableHeadSort.html",
-            " ng-class=\"{ 'sorting': tblCtrl.isSorting(c.value), 'sorting_asc': tblCtrl.isSortAsc(c.value), 'sorting_desc': tblCtrl.isSortDesc(c.value) }\""
-            );
+          " ng-class=\"{ 'sorting': tblCtrl.isSorting(c.value), 'sorting_asc': tblCtrl.isSortAsc(c.value), 'sorting_desc': tblCtrl.isSortDesc(c.value) }\""
+        );
 
         $templateCache.put("template/table/customTableFoot.html",
-            "<div ng-hide=\"tblCtrl.totalPages < 2\">\n" +
-            "  <custom-pagination total-items=\"tblCtrl.totalCount\" ng-model=\"pageNumber\" max-size=\"tblCtrl.maxSize\" rotate=\"false\" items-per-page=\"tblCtrl.pageSize\" boundary-links=\"true\"\n" +
-            "    first-text=\"«\" last-text=\"»\" previous-text=\"‹\" next-text=\"›\" ng-change=\"tblCtrl.pageChanged()\">\n" +
-            "  </custom-pagination>\n" +
-            "</div>");
+          "<div ng-hide=\"tblCtrl.totalPages < 2\">\n" +
+          "  <custom-pagination total-items=\"tblCtrl.totalCount\" ng-model=\"pageNumber\" max-size=\"tblCtrl.maxSize\" rotate=\"false\" items-per-page=\"tblCtrl.pageSize\" boundary-links=\"true\"\n" +
+          "    first-text=\"«\" last-text=\"»\" previous-text=\"‹\" next-text=\"›\" ng-change=\"tblCtrl.pageChanged()\">\n" +
+          "  </custom-pagination>\n" +
+          "</div>");
     }]);
 })()
