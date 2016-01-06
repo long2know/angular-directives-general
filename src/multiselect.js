@@ -265,6 +265,7 @@
                 scope.moveInProgress = false;
                 scope.popupId = popupId;
                 scope.recalculatePosition = recalculatePosition;
+                scope.isModelValueSet = false;
 
                 originalScope.$on('$destroy', function () {
                     scope.$destroy();
@@ -291,7 +292,7 @@
 
                 //watch disabled state
                 scope.$watch(function () {
-                    return $parse(attrs.disabled)(originalScope);
+                    return $parse(attrs.ngDisabled)(originalScope);
                 }, function (newVal) {
                     scope.disabled = newVal;
                 });
@@ -321,9 +322,15 @@
                     //model changes. We need to do this only if it is done outside directive scope, from controller, for example.
                     if (angular.isDefined(newVal)) {
                         markChecked(newVal);
+                        scope.isModelValueSet = true;
                         // Technically, defining ngChange will already have a watcher triggering its handler
                         // So, triggering it manually should be redundant
                         //scope.$eval(changeHandler);
+                    } else if (scope.isModelValueSet) {
+                        // If the model value is cleared externally, and we previously had some things checked,
+                        // we need to uncheck them.
+                        scope.uncheckAll();
+                        scope.isModelValueSet = false;
                     }
                     getHeaderText();
                     modelCtrl.$setValidity('required', scope.valid());
@@ -429,10 +436,14 @@
                             if (element == elementArray[i])
                                 return true;
                         return false;
-                    };
+                    }, 
+                    dropdownHeight,
+                    dropdownWidth;
 
                 scope.clickHandler = clickHandler;
                 scope.isVisible = false;
+                scope.isHeightedChanged = true;
+                
                 scope.toggleSelect = function () {
                     if (element.hasClass('open') || scope.isOpen) {
                         element.removeClass('open');
@@ -454,8 +465,12 @@
                     var windowHeight = $(window).height();
                     var windowWidth = $(window).width();
                     var ulElement = element.find("ul:first");
-                    var dropdownHeight = ulElement.height();
-                    var dropdownWidth = ulElement.width();
+                    
+                    if (scope.isHeightedChanged) {
+                        dropdownHeight = ulElement.height();
+                        dropdownWidth = ulElement.width();
+                        scope.isHeightedChanged = false;
+                    }
 
                     // If we have no height/width, the element isn't visisble - we can clone it and show it off screen to get
                     // its visibile dimensions. Alternatively, we could just make the element visible and then adjust,
@@ -468,8 +483,13 @@
                             .appendTo(parent)
                             .removeClass('ng-hide')
                             .show();
-                        var dropdownHeight = clonedElement.height();
-                        var dropdownWidth = clonedElement.width();
+
+                        dropdownHeight = clonedElement.height();
+                        dropdownWidth = clonedElement.width();
+
+                        // Memory clean up - also, if you don't remove the clone from the DOM, IE11 increases the height of the HTML DOM element (buggy piece of junk!)
+                        clonedElement.remove();
+                        clonedElement = null;
                     }
 
                     // Determine if outside of visible range when dropping down
