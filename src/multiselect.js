@@ -442,7 +442,7 @@
 
                 scope.clickHandler = clickHandler;
                 scope.isVisible = false;
-                scope.isHeightedChanged = true;
+                scope.isHeightChanged = true;
                 
                 scope.toggleSelect = function () {
                     if (element.hasClass('open') || scope.isOpen) {
@@ -466,10 +466,10 @@
                     var windowWidth = $(window).width();
                     var ulElement = element.find("ul:first");
                     
-                    if (scope.isHeightedChanged) {
+                    if (scope.isHeightChanged) {
                         dropdownHeight = ulElement.height();
                         dropdownWidth = ulElement.width();
-                        scope.isHeightedChanged = false;
+                        scope.isHeightChanged = false;
                     }
 
                     // If we have no height/width, the element isn't visisble - we can clone it and show it off screen to get
