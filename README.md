@@ -31,3 +31,4 @@ This is a general repository for Angular Directives that I've developed for my b
 - [Blog](https://long2know.com/2015/09/angular-reusable-table-directive/)
 - [Demo Plunker](http://plnkr.co/edit/GSORcd?p=preview)
 - [Demo Codepen](http://codepen.io/long2know/pen/dYPvOW)
+
