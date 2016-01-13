@@ -478,7 +478,8 @@
                     if (dropdownHeight <= 0 && dropdownWidth <= 0) {
                         var clonedElement = $(ulElement)
                             .clone()
-                            .css('position', 'absolute')
+                            .css('position', 'fixed')
+                            .css('top', '0')
                             .css('left', '-10000px')
                             .appendTo(parent)
                             .removeClass('ng-hide')
