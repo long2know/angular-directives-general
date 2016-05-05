@@ -2,8 +2,7 @@
 
 This is a general repository for Angular Directives that I've developed for my blog, [Longing to Know](https://long2know.com)
 
-# Copyright and license
-
+### Copyright and license
 Code copyright 2015-2016 Stephen Long.  Code released under the [Apache license](https://github.com/long2know/angular-directives-general/blob/master/LICENSE.md)
 
 ### Date Before and After validator
