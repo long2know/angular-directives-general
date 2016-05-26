@@ -55,7 +55,7 @@
                 if (isSingle) {
                     var randIndex = getRandomInt(min, max);
                     if (isSimple) {
-                        selected.push(options[randIndex].value); 
+                        selected.push(options[randIndex].key); 
                     } else {
                         selected.push(options[randIndex]);
                     }
@@ -71,7 +71,7 @@
                         if (arrIndex == -1) {
                             toSelectIndexes.push(randIndex);
                             if (isSimple) {
-                                selected.push(options[randIndex].value); 
+                                selected.push(options[randIndex].key); 
                             } else {
                                 selected.push(options[randIndex]);   
                             }
