@@ -10,7 +10,10 @@
         'ui']);
 
     var state1Ctrl = function () {
-        var vm = this;
+        var vm = this,
+        getRandomInt = function(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        };
 
         vm.options1 = [];
         for (var i = 0; i < 10; i++) {
@@ -24,6 +27,59 @@
 
         vm.option6 = 3;
         vm.option7 = [4, 11, 23];
+        
+        vm.clear = function() {
+            vm.option1 = [];
+            vm.option2 = [];
+            vm.option3 = [];
+            vm.option4 = [];
+            vm.option5 = [];
+            vm.option6 = [];
+            vm.option7 = [];
+        };
+        
+        vm.randomSelect = function() {
+            vm.clear();
+            var arrSelected = [ vm.option1, vm.option2, vm.option3, vm.option4, vm.option5, vm.option6, vm.option7];
+            var arrOptions = [ vm.options1, vm.options2, vm.options2, vm.options1, vm.options1, vm.options1, vm.options2 ];
+            var arrIsSingle = [ false, false, false, true, false, false, false  ];
+            var arrIsSimple = [ true, true, false, false, true, true, true  ];
+            
+            for (var i = 0; i < arrSelected.length; i++) {
+                var selected = arrSelected[i];
+                var options = arrOptions[i];
+                var isSingle = arrIsSingle[i];
+                var isSimple = arrIsSimple[i];
+                var min = 0;
+                var max = options.length - 1;
+                if (isSingle) {
+                    var randIndex = getRandomInt(min, max);
+                    if (isSimple) {
+                        selected.push(options[randIndex].value); 
+                    } else {
+                        selected.push(options[randIndex]);
+                    }
+                }
+                else
+                {
+                    var toSelectIndexes = [];
+                    var numItems = getRandomInt(0, options.length) + 1;
+                    for (var j = 0; j < getRandomInt(1, numItems); j++)
+                    {
+                        var randIndex = getRandomInt(min, max);
+                        var arrIndex = toSelectIndexes.indexOf(randIndex);
+                        if (arrIndex == -1) {
+                            toSelectIndexes.push(randIndex);
+                            if (isSimple) {
+                                selected.push(options[randIndex].value); 
+                            } else {
+                                selected.push(options[randIndex]);   
+                            }
+                        }
+                    }
+                }
+            }
+        }
     };
 
     state1Ctrl.$inject = [];

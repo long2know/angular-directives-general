@@ -33,6 +33,8 @@
             </nav>
         </script>
         <script type="text/ng-template" id="state1.html">
+        <div class="row">
+        <div class="col-lg-4">
             <form>
                 <div class="form-group">
                     <multiselect class="input-xlarge multiselect" ng-model="vm.option1" options="p.key as p.value for p in vm.options1" select-limit="5"
@@ -57,7 +59,7 @@
         
                 <div class="form-group">
                     <multiselect class="input-xlarge multiselect" ng-model="vm.option4" options="p.key as p.value for p in vm.options1" select-limit="5"
-                                 header="Single Select Stuff4" selected-header="options selected" multiple="false" required
+                                 header="Single Select Stuff4" selected-header="options selected" multiple="false" required complex-models="true"
                                  enable-filter="true" filter-placeholder="Filter stuff..">
                     </multiselect>
                 </div>
@@ -111,6 +113,14 @@
                     </div>
                 </div>
             </form>
+                        </div>
+            <div class="buttons col-lg-4">
+                    <div class="buttons">
+                        <button ng-click="vm.clear()">Clear Selections</button>
+                        <button ng-click="vm.randomSelect()">Randomly Select</button>
+                    </div>
+            </div>
+            </div>
         </script>
     </body>
 </html>

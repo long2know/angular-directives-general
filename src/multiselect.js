@@ -169,6 +169,17 @@
                         }
                         setModelValue(true);
                     },
+                    getModelValue = function (item) {
+                        if (isComplex) {
+                            value = item.model;
+                        }
+                        else {
+                            var local = {};
+                            local[parserResult.itemName] = item.model;
+                            value = parserResult.modelMapper(local);
+                        }
+                        return value;
+                    },
                     setModelValue = function (isMultiple) {
                         var value;
                         if (isMultiple) {
@@ -201,25 +212,47 @@
                                 }
                             })
                         }
+                        scope.triggered = true;
                         modelCtrl.$setViewValue(value);
                     },
 
                     markChecked = function (newVal) {
                         if (!angular.isArray(newVal)) {
                             angular.forEach(scope.items, function (item) {
-                                if (angular.equals(item.model, newVal)) {
+                                var value = getModelValue(item);
+                                if (angular.equals(value, newVal)) {
                                     item.checked = true;
                                     return false;
                                 }
                             });
                         } else {
-                            angular.forEach(newVal, function (i) {
-                                angular.forEach(scope.items, function (item) {
-                                    if (angular.equals(item.model, i)) {
-                                        item.checked = true;
+                            var itemsToCheck = [];
+                            var itemsToUncheck = [];
+                            var itemValues = [];
+                            for (var j = 0; j < scope.items.length; j++) {
+                                itemValues.push(getModelValue(scope.items[j]));
+                                itemsToUncheck.push(j);
+                            };
+
+                            for (var i = 0; i < newVal.length; i++) {
+                                for (var j = 0; j < itemValues.length; j++) {
+                                    if (angular.equals(itemValues[j], newVal[i])) {
+                                        itemsToCheck.push(scope.items[j]);
+                                        var index = itemsToUncheck.indexOf(j);
+                                        itemsToUncheck.splice(index, 1);
+                                        break;
                                     }
-                                });
-                            });
+                                }
+                            }
+
+                            for (var i = 0; i < itemsToCheck.length; i++) {
+                                itemsToCheck[i].checked = true;
+                            }
+
+                            for (var i = 0; i < itemsToUncheck.length; i++) {
+                                scope.items[itemsToUncheck[i]].checked = false;
+                            }
+
                         }
                     },
 
@@ -317,23 +350,32 @@
                 scope.$watch(function () {
                     return modelCtrl.$modelValue;
                 }, function (newVal, oldVal) {
-                    //when directive initialize, newVal usually undefined. Also, if model value already set in the controller
-                    //for preselected list then we need to mark checked in our scope item. But we don't want to do this every time
+                    //when directive initializes, newVal is usually undefined. Also, if model value is already set in the controller
+                    //for preselected list then we need to mark checked in our scope item. But we don't want to do this every time the
                     //model changes. We need to do this only if it is done outside directive scope, from controller, for example.
-                    if (angular.isDefined(newVal)) {
-                        markChecked(newVal);
-                        scope.isModelValueSet = true;
-                        // Technically, defining ngChange will already have a watcher triggering its handler
-                        // So, triggering it manually should be redundant
-                        //scope.$eval(changeHandler);
-                    } else if (scope.isModelValueSet) {
-                        // If the model value is cleared externally, and we previously had some things checked,
-                        // we need to uncheck them.
-                        scope.uncheckAll();
-                        scope.isModelValueSet = false;
+                    if (!scope.triggered) {
+                        if (angular.isDefined(newVal)) {
+                            var isArray = newVal instanceof Array;
+                            if (isArray && newVal.length == 0) {
+                                scope.uncheckAll();
+                            } else {
+                                markChecked(newVal);
+                            }
+                            markChecked(newVal);
+                            scope.isModelValueSet = true;
+                            // Technically, defining ngChange will already have a watcher triggering its handler
+                            // So, triggering it manually should be redundant
+                            //scope.$eval(changeHandler);
+                        } else if (scope.isModelValueSet) {
+                            // If the model value is cleared externally, and we previously had some things checked,
+                            // we need to uncheck them.
+                            scope.uncheckAll();
+                            scope.isModelValueSet = false;
+                        }
                     }
                     getHeaderText();
                     modelCtrl.$setValidity('required', scope.valid());
+                    scope.triggered = false;
                 }, true);
 
                 parseModel();
@@ -436,14 +478,16 @@
                             if (element == elementArray[i])
                                 return true;
                         return false;
-                    }, 
-                    dropdownHeight,
-                    dropdownWidth;
+                    };
 
                 scope.clickHandler = clickHandler;
                 scope.isVisible = false;
                 scope.isHeightChanged = true;
-                
+
+                var
+                    dropdownHeight,
+                    dropdownWidth;
+
                 scope.toggleSelect = function () {
                     if (element.hasClass('open') || scope.isOpen) {
                         element.removeClass('open');
@@ -465,7 +509,7 @@
                     var windowHeight = $(window).height();
                     var windowWidth = $(window).width();
                     var ulElement = element.find("ul:first");
-                    
+
                     if (scope.isHeightChanged) {
                         dropdownHeight = ulElement.height();
                         dropdownWidth = ulElement.width();
@@ -526,6 +570,7 @@
         }
     };
 
+    // IE11 doesn't enable the filter box when parent changes is using disabled attribute - so, use ng-disabled in your own HTML!
     angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/multiselect/multiselectPopup.html",
             "<div class=\"btn-group\" ng-class=\"{ dropup: dropup, single: !multiple }\">" +
@@ -557,7 +602,7 @@
                 "</ul>" +
             "</div>");
     }]);
-
+    
     multiselectParser.$inject = ['$parse'];
     multiselect.$inject = ['$parse', '$timeout', '$filter', '$document', '$compile', '$window', '$uibPosition', 'multiselectParser'];
     multiselectPopup.$inject = ['$document'];
