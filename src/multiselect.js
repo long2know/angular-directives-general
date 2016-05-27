@@ -96,15 +96,17 @@
                     canCheck = function () {
                         var belowLimit = false;
                         var atLimit = false;
+                        var aboveLimit = false;
                         if (selectLimit === 0 || !isMultiple) {
                             belowLimit = true;
                             atLimit = false;
                         } else {
                             var checkedItems = scope.items.filter(isChecked);
                             atLimit = checkedItems.length === selectLimit;
+                            aboveLimit = checkedItems.length > selectLimit;
                             belowLimit = checkedItems.length < selectLimit;
                         }
-                        scope.maxSelected = atLimit;
+                        scope.maxSelected = atLimit || aboveLimit;
                         return atLimit || belowLimit;
                     },
                     getHeaderText = function () {
@@ -163,9 +165,11 @@
                         setModelValue(false);
                     },
                     selectMultiple = function (item) {
-                        item.checked = !item.checked;
-                        if (!canCheck()) {
+                        if (item.checked) {
                             item.checked = false;
+                            canCheck();
+                        } else {
+                            item.checked = canCheck();
                         }
                         setModelValue(true);
                     },
@@ -374,6 +378,7 @@
                         }
                     }
                     getHeaderText();
+                    canCheck();
                     modelCtrl.$setValidity('required', scope.valid());
                     scope.triggered = false;
                 }, true);
