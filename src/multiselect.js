@@ -168,126 +168,126 @@
                         if (item.checked) {
                             item.checked = false;
                             canCheck();
-                        } else {
+                        } else if (!scope.maxSelected) {
                             item.checked = canCheck();
                         }
                         setModelValue(true);
                     },
-                    getModelValue = function (item) {
-                        if (isComplex) {
-                            value = item.model;
-                        }
-                        else {
-                            var local = {};
-                            local[parserResult.itemName] = item.model;
-                            value = parserResult.modelMapper(local);
-                        }
-                        return value;
-                    },
-                    setModelValue = function (isMultiple) {
-                        var value;
-                        if (isMultiple) {
-                            value = [];
-                            angular.forEach(scope.items, function (item) {
-                                // If map simple values
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value.push(item.model);
-                                    } else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value.push(parserResult.modelMapper(local));
-                                    }
-                                }
-                            })
-                        } else {
-                            angular.forEach(scope.items, function (item) {
-                                if (item.checked) {
-                                    if (isComplex) {
-                                        value = item.model;
-                                        return false;
-                                    }
-                                    else {
-                                        var local = {};
-                                        local[parserResult.itemName] = item.model;
-                                        value = parserResult.modelMapper(local);
-                                        return false;
-                                    }
-                                }
-                            })
-                        }
-                        scope.triggered = true;
-                        modelCtrl.$setViewValue(value);
-                    },
-
-                    markChecked = function (newVal) {
-                        if (!angular.isArray(newVal)) {
-                            angular.forEach(scope.items, function (item) {
-                                var value = getModelValue(item);
-                                if (angular.equals(value, newVal)) {
-                                    item.checked = true;
-                                    return false;
-                                }
-                            });
-                        } else {
-                            var itemsToCheck = [];
-                            var itemsToUncheck = [];
-                            var itemValues = [];
-                            for (var j = 0; j < scope.items.length; j++) {
-                                itemValues.push(getModelValue(scope.items[j]));
-                                itemsToUncheck.push(j);
-                            };
-
-                            for (var i = 0; i < newVal.length; i++) {
-                                for (var j = 0; j < itemValues.length; j++) {
-                                    if (angular.equals(itemValues[j], newVal[i])) {
-                                        itemsToCheck.push(scope.items[j]);
-                                        var index = itemsToUncheck.indexOf(j);
-                                        itemsToUncheck.splice(index, 1);
-                                        break;
-                                    }
-                                }
+            getModelValue = function (item) {
+                if (isComplex) {
+                    value = item.model;
+                }
+                else {
+                    var local = {};
+                    local[parserResult.itemName] = item.model;
+                    value = parserResult.modelMapper(local);
+                }
+                return value;
+            },
+            setModelValue = function (isMultiple) {
+                var value;
+                if (isMultiple) {
+                    value = [];
+                    angular.forEach(scope.items, function (item) {
+                        // If map simple values
+                        if (item.checked) {
+                            if (isComplex) {
+                                value.push(item.model);
+                            } else {
+                                var local = {};
+                                local[parserResult.itemName] = item.model;
+                                value.push(parserResult.modelMapper(local));
                             }
-
-                            for (var i = 0; i < itemsToCheck.length; i++) {
-                                itemsToCheck[i].checked = true;
-                            }
-
-                            for (var i = 0; i < itemsToUncheck.length; i++) {
-                                scope.items[itemsToUncheck[i]].checked = false;
-                            }
-
                         }
-                    },
-
-                    // recalculate actual position and set new values to scope
-                    // after digest loop is popup in right position
-                    recalculatePosition = function () {
-                        scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
-                        scope.position.top += $popup.prop('offsetHeight');
-                    },
-
-                    fireRecalculating = function () {
-                        if (!scope.moveInProgress) {
-                            scope.moveInProgress = true;
-                            scope.$digest();
-                        }
-
-                        // Cancel previous timeout
-                        if (timeoutEventPromise) {
-                            $timeout.cancel(timeoutEventPromise);
-                        }
-
-                        // Debounced executing recalculate after events fired
-                        timeoutEventPromise = $timeout(function () {
-                            // if popup is visible
-                            if (scope.isOpen) {
-                                recalculatePosition();
+                    })
+                } else {
+                    angular.forEach(scope.items, function (item) {
+                        if (item.checked) {
+                            if (isComplex) {
+                                value = item.model;
+                                return false;
                             }
-                            scope.moveInProgress = false;
-                            scope.$digest();
-                        }, eventDebounceTime);
+                            else {
+                                var local = {};
+                                local[parserResult.itemName] = item.model;
+                                value = parserResult.modelMapper(local);
+                                return false;
+                            }
+                        }
+                    })
+                }
+                scope.triggered = true;
+                modelCtrl.$setViewValue(value);
+            },
+
+            markChecked = function (newVal) {
+                if (!angular.isArray(newVal)) {
+                    angular.forEach(scope.items, function (item) {
+                        var value = getModelValue(item);
+                        if (angular.equals(value, newVal)) {
+                            item.checked = true;
+                            return false;
+                        }
+                    });
+                } else {
+                    var itemsToCheck = [];
+                    var itemsToUncheck = [];
+                    var itemValues = [];
+                    for (var j = 0; j < scope.items.length; j++) {
+                        itemValues.push(getModelValue(scope.items[j]));
+                        itemsToUncheck.push(j);
                     };
+
+                    for (var i = 0; i < newVal.length; i++) {
+                        for (var j = 0; j < itemValues.length; j++) {
+                            if (angular.equals(itemValues[j], newVal[i])) {
+                                itemsToCheck.push(scope.items[j]);
+                                var index = itemsToUncheck.indexOf(j);
+                                itemsToUncheck.splice(index, 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    for (var i = 0; i < itemsToCheck.length; i++) {
+                        itemsToCheck[i].checked = true;
+                    }
+
+                    for (var i = 0; i < itemsToUncheck.length; i++) {
+                        scope.items[itemsToUncheck[i]].checked = false;
+                    }
+
+                }
+            },
+
+            // recalculate actual position and set new values to scope
+            // after digest loop is popup in right position
+            recalculatePosition = function () {
+                scope.position = appendToBody ? $position.offset($popup) : $position.position(element);
+                scope.position.top += $popup.prop('offsetHeight');
+            },
+
+            fireRecalculating = function () {
+                if (!scope.moveInProgress) {
+                    scope.moveInProgress = true;
+                    scope.$digest();
+                }
+
+                // Cancel previous timeout
+                if (timeoutEventPromise) {
+                    $timeout.cancel(timeoutEventPromise);
+                }
+
+                // Debounced executing recalculate after events fired
+                timeoutEventPromise = $timeout(function () {
+                    // if popup is visible
+                    if (scope.isOpen) {
+                        recalculatePosition();
+                    }
+                    scope.moveInProgress = false;
+                    scope.$digest();
+                }, eventDebounceTime);
+            };
 
                 scope.items = [];
                 scope.header = header;

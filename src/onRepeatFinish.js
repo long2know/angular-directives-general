@@ -20,15 +20,18 @@
             ]);
     }
 
-    var onRepeatFinish = function ($timeout, $log) {
+    var onRepeatFinish = function ($timeout) {
         var directive = {
             restrict: 'A',
             link: function (scope, element, attr) {
                 if (scope.$last === true) {
-                    $timeout(function () {
-                        $log.log("Repeat finished - emitting");
-                        scope.$emit('ngRepeatFinished');
-                    });
+                    if (attr.onRepeatFinish) {
+                        scope.$eval(attr.onRepeatFinish);
+                    } else {
+                        $timeout(function () {
+                            scope.$emit('ngRepeatFinished');
+                        });
+                    }
                 }
             }
         };

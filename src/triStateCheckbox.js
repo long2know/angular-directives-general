@@ -28,13 +28,13 @@
                 checkboxes: '=',
                 masterSet: '=',
                 setMaster: '=',
-                masterClick: '=',
+                masterClicked: '=',
+                masterChange: '=',
                 masterSetOff: '@masterSetOff',
                 childClick: '@childClick'
             },
-            template: '<input type="checkbox" ng-model="master" ng-change="masterChange()">',
-            controller: ['$scope', '$element', function ($scope, $element) {
-
+            template: '<input type="checkbox" ng-click="clicked()" ng-model="master">',
+            controller: ['$scope', '$timeout', '$element', function ($scope, $timeout, $element) {
                 $scope.setState = function () {
                     var set = 0;
                     for (i = 0; i < $scope.checkboxes.length; i++)
@@ -58,12 +58,19 @@
                     $element.prop('checked', false);
                 });
 
-                $scope.masterChange = function () {
+                $scope.clicked = function () {
+                    $scope.masterChanged();
+                    if ($scope.masterClicked) {
+                        $scope.masterClicked();
+                    }
+                }
+
+                $scope.masterChanged = function () {
                     for (i = 0; i < $scope.checkboxes.length; i++) {
                         $scope.checkboxes[i].isSelected = $scope.master;
                     }
-                    if ($scope.masterClick) {
-                        $scope.masterClick();
+                    if ($scope.masterChange) {
+                        $scope.masterChange();
                     }
                 };
 

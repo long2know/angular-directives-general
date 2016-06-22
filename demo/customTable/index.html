@@ -26,42 +26,39 @@
 <body class="flex-layout" ng-app="myApp">
     <div class="container-fluid row" ng-controller="myCtrl as vm">
         <div class="buttons">
-            <button ng-click="vm.addItems(100)">Add 100 Items</button>
-            <button ng-click="vm.addItems(1000)">Add 1000 Items</button>
-            <button ng-click="vm.removeItems(100)">Remove 100 Items</button>
-            <button ng-click="vm.removeItems(1000)">Remove 1000 Items</button>
-            <button ng-click="vm.toggleTable1()">Toggle Repeater Table</button>
-            <button ng-click="vm.toggleTable2()">Toggle Non-Repeater Table</button>
+            <button class="btn btn-default" ng-click="vm.addItems(100)">Add 100 Items</button>
+            <button class="btn btn-default" ng-click="vm.addItems(1000)">Add 1000 Items</button>
+            <button class="btn btn-default" ng-click="vm.removeItems(100)">Remove 100 Items</button>
+            <button class="btn btn-default" ng-click="vm.removeItems(1000)">Remove 1000 Items</button>
+            <button class="btn btn-default" ng-click="vm.toggleTable1()">Toggle Repeater Table</button>
+            <button class="btn btn-default" ng-click="vm.toggleTable2()">Toggle Non-Repeater Table</button>
         </div>
-        <div class="flex-scroll-content" ng-if="vm.isTable1Visible">
-            <div>
-                <h3>
-                    <span>Table with Repeater<span>
-                    <span>Row Count</span>
-                    <span ng-bind="vm.tableData1.length"></span>
-                    <span style="font-weight:bold">$Watchers: </span>
-                    <span style="font-weight:bold" ng-bind="vm.watchCount" />
-                </h3>
-            </div>
-            <div>
-                <custom-table table-columns="vm.tableColumns" ng-model="vm.tableData1" client-sort="true" track-by="id" sort-by="vm.sortBy1"
-                sort-direction="vm.sortDirection1"></custom-table>
-            </div>
+
+        <div>
+            <h3>
+                <span>Table with Repeater</span>
+                <span>Row Count</span>
+                <span ng-bind="vm.table1Options.records.length"></span>
+            </h3>
         </div>
-        <div class="flex-scroll-content" ng-if="vm.isTable2Visible">
-            <div>
-                <h3>
-                    <span>Table Rendered Direct to DOM<span>
-                    <span>Row Count</span>
-                    <span ng-bind="vm.tableData2.length"></span>
-                </h3>
-            </div>
-            <div>
-                <custom-table table-columns="vm.tableColumns" ng-model="vm.tableData2" updated-rows="vm.updatedRows" use-repeat="false" client-sort="true"
-                track-by="id" sort-by="vm.sortBy2" sort-direction="vm.sortDirection2"></custom-table>
-            </div>
+
+        <div class="flex-scroll-content table1-container" ng-if="vm.isTable1Visible">
+            <custom-table options="vm.table1Options"></custom-table>
+        </div>
+
+        <br />
+
+        <div>
+            <h3>
+                <span>Table Rendered Directly to DOM</span>
+                <span>Row Count</span>
+                <span ng-bind="vm.table2Options.records.length"></span>
+            </h3>
+        </div>
+
+        <div class="flex-scroll-content table2-container" ng-if="vm.isTable2Visible">
+            <custom-table options="vm.table2Options"></custom-table>
         </div>
     </div>
 </body>
-
 </html>
