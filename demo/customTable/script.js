@@ -70,6 +70,24 @@
                         stickyHeader: true,
                         stickyHeaderOffset: 0,
                         stickyContainer: '.table1-container'
+                    },
+                    callbacks: {
+                        sortHeaderClicked: function (data) { },
+                        pageChanged: function (data) { },
+                        pageSizeChanged: function (data) { },
+                        checkboxClicked: function (data) {
+                            data.item.isError = data.item.isSelected;
+                        },
+                        masterClicked: function () {
+                            var updatedRecords = [];
+                            angular.forEach(vm.table1Options.pagedData, function (item) {
+                                item.isError = item.isSelected;
+                                updatedRecords.push(item);
+                            });
+                            $timeout(function () {
+                                vm.table1Options.updatedRecords = updatedRecords;
+                            }, 0);
+                        },
                     }
                 };
 
@@ -98,6 +116,28 @@
                         stickyHeader: true,
                         stickyHeaderOffset: 0,
                         stickyContainer: '.table2-container'
+                    },
+                    callbacks: {
+                        sortHeaderClicked: function (data) { },
+                        pageChanged: function (data) { },
+                        pageSizeChanged: function (data) { },
+                        checkboxClicked: function (data) {
+                            data.item.isSummary = data.item.isSelected;
+                            var updatedRecords = [data.item];
+                            $timeout(function () {
+                                vm.table2Options.updatedRecords = updatedRecords;
+                            }, 0);
+                        },
+                        masterClicked: function () {
+                            var updatedRecords = [];
+                            angular.forEach(vm.table2Options.pagedData, function (item) {
+                                item.isSummary = item.isSelected;
+                                updatedRecords.push(item);
+                            });
+                            $timeout(function () {
+                                vm.table2Options.updatedRecords = updatedRecords;
+                            }, 0);
+                        },
                     }
                 };
 

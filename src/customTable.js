@@ -177,84 +177,91 @@
                 $log.log('Insert rows time: ' + time);
             },
             updateRows = function () {
-                var $rows = [],
-                    indexes = [],
-                    previousError = [],
-                    $tbody = $(tblCtrl.element.find("tbody")),
-                    indexRegex = /([\d]+)/g;
-                angular.forEach($scope.options.updatedRecords, function (model) {
-                    var key = model.id;
-                    $row = $tbody.find("tr[data-key=\"" + key + "\"]");
-                    previousError.push($row.hasClass("is-error"));
-                    var recordModel = $row.data("model");
-                    $rows.push($row);
-                    var index = recordModel.match(indexRegex)[0];
-                    indexes.push(index);
-                });
+                if ($scope.options.updatedRecords) {
+                    if ($scope.options.updatedRecords.length > 10) {
+                        redrawTable();
+                    }
+                    else {
+                        var $rows = [],
+                            indexes = [],
+                            previousError = [],
+                            $tbody = $(tblCtrl.element.find("tbody")),
+                            indexRegex = /([\d]+)/g;
+                        angular.forEach($scope.options.updatedRecords, function (model) {
+                            var key = model.id;
+                            $row = $tbody.find("tr[data-key=\"" + key + "\"]");
+                            previousError.push($row.hasClass("is-error"));
+                            var recordModel = $row.data("model");
+                            $rows.push($row);
+                            var index = recordModel.match(indexRegex)[0];
+                            indexes.push(index);
+                        });
 
-                var tableRows = tblCtrl.getNonRepeatRows(indexes);
-                var className = "is-error";
-                for (var i = 0; i < $rows.length; i++) {
-                    var $newRow = $(tableRows[i]);
-                    var isError = $scope.options.updatedRecords[i].isError;
-                    if (isError || previousError[i]) {
-                        if (previousError[i]) {
-                            $animate.addClass($newRow, className);
-                        } else {
-                            $newRow.addClass(className);
+                        var tableRows = tblCtrl.getNonRepeatRows(indexes);
+                        var className = "is-error";
+                        for (var i = 0; i < $rows.length; i++) {
+                            var $newRow = $(tableRows[i]);
+                            var isError = $scope.options.updatedRecords[i].isError;
+                            if (isError || previousError[i]) {
+                                if (previousError[i]) {
+                                    $animate.addClass($newRow, className);
+                                } else {
+                                    $newRow.addClass(className);
+                                }
+                            }
+                            $rows[i].replaceWith($newRow);
+
+                            if (previousError[i] && !isError) {
+                                $animate.removeClass($newRow, className);
+                            };
                         }
                     }
-                    $rows[i].replaceWith($newRow);
-
-                    if (previousError[i] && !isError) {
-                        $animate.removeClass($newRow, className);
-                    };
                 }
             },
-                clearSelection = function () {
-                    $scope.$broadcast("masterSetOff");
-                    angular.forEach(tblCtrl.pagedData, function (model) {
-                        model.isSelected = false;
+            clearSelection = function () {
+                $scope.$broadcast("masterSetOff");
+                angular.forEach(tblCtrl.pagedData, function (model) {
+                    model.isSelected = false;
+                });
+
+                if (tblCtrl.useRepeat === false) {
+                    var $rows = $(tblCtrl.element.find("tbody > tr"));
+                    $.each($rows, function (index, row) {
+                        var $row = $(row);
+                        var $checkbox = $row.find("td.td-checkbox > input[type='checkbox']");
+                        $checkbox.prop('checked', false);
                     });
-
-                    if (tblCtrl.useRepeat === false) {
-                        var $rows = $(tblCtrl.element.find("tbody > tr"));
-                        $.each($rows, function (index, row) {
-                            var $row = $(row);
-                            var $checkbox = $row.find("td.td-checkbox > input[type='checkbox']");
-                            $checkbox.prop('checked', false);
-                        });
+                }
+            },
+            sort = function (array, fieldName, direction, isNumeric) {
+                var sortFunc = function (field, rev, primer) {
+                    // Return the required a,b function
+                    return function (a, b) {
+                        // Reset a, b to the field
+                        a = primer(pathValue(a, field)), b = primer(pathValue(b, field));
+                        // Do actual sorting, reverse as needed
+                        return ((a < b) ? -1 : ((a > b) ? 1 : 0)) * (rev ? -1 : 1);
                     }
-                },
-                sort = function (array, fieldName, direction, isNumeric) {
-                    var sortFunc = function (field, rev, primer) {
-                        // Return the required a,b function
-                        return function (a, b) {
-                            // Reset a, b to the field
-                            a = primer(pathValue(a, field)), b = primer(pathValue(b, field));
-                            // Do actual sorting, reverse as needed
-                            return ((a < b) ? -1 : ((a > b) ? 1 : 0)) * (rev ? -1 : 1);
-                        }
-                    };
-
-                    // Have to handle deep paths
-                    var pathValue = function (obj, path) {
-                        for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
-                            obj = obj[path[i]];
-                        };
-                        return obj;
-                    };
-
-                    var primer = isNumeric ? function (a) { return parseFloat(String(a).replace(/[^0-9.-]+/g, '')); } :
-                        function (a) { return String(a).toUpperCase(); };
-
-                    isSorting = true;
-                    start = new Date().getTime();
-                    array.sort(sortFunc(fieldName, direction === 'desc', primer));
-                    end = new Date().getTime();
-                    time = end - start;
-                    $log.log('Sort time: ' + time);
                 };
+
+                // Have to handle deep paths
+                var pathValue = function (obj, path) {
+                    for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
+                        obj = obj[path[i]];
+                    };
+                    return obj;
+                };
+
+                var primer = isNumeric ? function (a) { return parseFloat(String(a).replace(/[^0-9.-]+/g, '')); } :
+                    function (a) { return String(a).toUpperCase(); };
+
+                isSorting = true;
+                start = new Date().getTime();
+                array.sort(sortFunc(fieldName, direction === 'desc', primer));
+                end = new Date().getTime();
+                time = end - start;
+                $log.log('Sort time: ' + time);
+            };
 
         tblCtrl.init = init;
 
@@ -512,6 +519,7 @@
                 tblCtrl.singleSelect = singleSelect;
 
                 scope.pagedData = clientPaging ? [] : scope.options.records;
+                scope.options.pagedData = scope.pagedData;
 
                 //if (!ngModelCtrl) {
                 //    return; // do nothing if no ng-model
@@ -1336,71 +1344,71 @@
 
     angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/table/customTable.html",
-          "<table <--STICKY--> class=\"table-striped table-hover custom-table\" <--STYLE-->>\n" +
-          "  <--HEAD-->\n" +
-          "  <--BODY-->\n" +
-          "</table>" +
-          "<--FOOT-->");
+            "<table <--STICKY--> class=\"table-striped table-hover custom-table\" <--STYLE-->>\n" +
+            "  <--HEAD-->\n" +
+            "  <--BODY-->\n" +
+            "</table>" +
+            "<--FOOT-->");
 
         $templateCache.put("template/table/customTableBody.html",
-          "<tbody>\n" +
-          "  <--ROWS-->\n" +
-          "</tbody>");
+            "<tbody>\n" +
+            "  <--ROWS-->\n" +
+            "</tbody>");
 
         $templateCache.put("template/table/customTableRow.html",
-          //"<tr ng-repeat='<--RECORD--> in ngModel track by $index' is-state='r.isError' is-state-class='is-error'>\n" +
-          "<tr ng-repeat='<--RECORD--> in pagedData track by <--RECORDKEY-->' ng-class=\"<--COMPUTEDCLASS-->\" <--REPEATFINISH-->>\n" +
-          "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
-          "  <--CELLS-->\n" +
-          "</tr>");
+            //"<tr ng-repeat='<--RECORD--> in ngModel track by $index' is-state='r.isError' is-state-class='is-error'>\n" +
+            "<tr ng-repeat='<--RECORD--> in pagedData track by <--RECORDKEY-->' ng-class=\"<--COMPUTEDCLASS-->\" <--REPEATFINISH-->>\n" +
+            "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
+            "  <--CELLS-->\n" +
+            "</tr>");
 
         $templateCache.put("template/table/customTableRowNoRepeat.html",
-          "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" class=\"<--COMPUTEDCLASS-->\">\n" +
-          "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
-          "  <--CELLS-->\n" +
-          "</tr>");
+            "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" class=\"<--COMPUTEDCLASS-->\">\n" +
+            "  <td class=\"td-checkbox\"><input type=\"checkbox\" ng-model=\"<--RECORD-->.isSelected\" ng-click=\"tblCtrl.selectionChanged(<--RECORD-->)\" /></td>\n" +
+            "  <--CELLS-->\n" +
+            "</tr>");
 
         $templateCache.put("template/table/customTableRowNoSelect.html",
-          "<tr ng-repeat='<--RECORD--> in pagedData track by <--RECORDKEY-->' ng-class=\"<--COMPUTEDCLASS-->\" <--REPEATFINISH-->>\n" +
-          "  <--CELLS-->\n" +
-          "</tr>");
+            "<tr ng-repeat='<--RECORD--> in pagedData track by <--RECORDKEY-->' ng-class=\"<--COMPUTEDCLASS-->\" <--REPEATFINISH-->>\n" +
+            "  <--CELLS-->\n" +
+            "</tr>");
 
         $templateCache.put("template/table/customTableRowNoSelectNoRepeat.html",
-          "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" class=\"<--COMPUTEDCLASS-->\">\n" +
-          "  <--CELLS-->\n" +
-          "</tr>");
+            "<tr data-key=\"<--RECORDKEY-->\" data-model=\"<--RECORD-->\" class=\"<--COMPUTEDCLASS-->\">\n" +
+            "  <--CELLS-->\n" +
+            "</tr>");
 
         $templateCache.put("template/table/customTableCell.html",
-          "<td class='<--CELLSTYLE-->' ng-class='<--CELLCLASS-->' ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'></td>"
-          );
+            "<td class='<--CELLSTYLE-->' ng-class='<--CELLCLASS-->' ng-bind='<--RECORD-->.<--BIND--><--FILTER-->'></td>"
+        );
 
         $templateCache.put("template/table/customTableCellNoRepeat.html",
-          "<td class='<--CELLCLASS-->'><--BIND--></td>"
-          );
+            "<td class='<--CELLCLASS-->'><--BIND--></td>"
+        );
 
         $templateCache.put("template/table/customTableComputedCell.html",
-          "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
-          "  <a ui-sref=\"<--SREF-->\" class=\"link\" ng-bind=\"<--BIND-->\"></a>\n" +
-          "</td>"
-          );
+            "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
+            "  <a ui-sref=\"<--SREF-->\" class=\"link\" ng-bind=\"<--BIND-->\"></a>\n" +
+            "</td>"
+        );
 
         $templateCache.put("template/table/customTableHoverOverCell.html",
-          "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
-          "  <button uib-popover=\"{{<--HOVERBIND-->}}\" popover-title='{{<--BIND-->}}' popover-placement=\"<--HOVERPLACEMENT-->\" type=\"button\" class=\"btn btn-default\" ng-if=\"<--HOVERVISIBILITY-->\"><--DISPLAYTEXT--></button>\n" +
-          "</td>"
+            "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
+            "  <button uib-popover=\"{{<--HOVERBIND-->}}\" popover-title='{{<--BIND-->}}' popover-placement=\"<--HOVERPLACEMENT-->\" type=\"button\" class=\"btn btn-default\" ng-if=\"<--HOVERVISIBILITY-->\"><--DISPLAYTEXT--></button>\n" +
+            "</td>"
         );
 
         $templateCache.put("template/table/customTableCallbackCell.html",
-          "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
-          "  <a class=\"link\" ng-bind=\"<--BIND-->\" ng-click=\"options.callbacks.<--CALLBACK-->\"></a>\n" +
-          "</td>"
-          );
+            "<td ng-class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
+            "  <a class=\"link\" ng-bind=\"<--BIND-->\" ng-click=\"options.callbacks.<--CALLBACK-->\"></a>\n" +
+            "</td>"
+        );
 
         $templateCache.put("template/table/customTableComputedCellNoRepeat.html",
-          "<td class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
-          "  <a ui-sref=\"<--SREF-->\" class=\"link\"><--BIND--></a>\n" +
-          "</td>"
-          );
+            "<td class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
+            "  <a ui-sref=\"<--SREF-->\" class=\"link\"><--BIND--></a>\n" +
+            "</td>"
+        );
 
         $templateCache.put("template/table/customTableHoverOverCellNoRepeat.html",
             "<td class='<--CELLCLASS-->' style=\"white-space:nowrap;\">\n" +
@@ -1415,26 +1423,26 @@
         );
 
         $templateCache.put("template/table/customTableHead.html",
-          "<thead <--STICKYHEAD-->>\n" +
-          "  <tr>\n" +
-          "    <th class=\"th-checkbox\">\n" +
-          "      <tri-state-checkbox class=\"toggle-all\" checkboxes=\"pagedData\" master-set-off=\"masterSetOff\" master-change=\"tblCtrl.masterChange()\" master-clicked=\"tblCtrl.masterClicked\" child-click=\"childClick\"></tri-state-checkbox>\n" +
-          "    </th>\n" +
-          "    <th bindonce ng-repeat=\"c in options.columnDefns track by $index\"<--SORT-->" +
-          "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" class=\"{{c.style}}\"><span ng-bind=\"c.name\">\n" +
-          "    </th>\n" +
-          "  </tr>\n" +
-          "</thead>"
+            "<thead <--STICKYHEAD-->>\n" +
+            "  <tr>\n" +
+            "    <th class=\"th-checkbox\">\n" +
+            "      <tri-state-checkbox class=\"toggle-all\" checkboxes=\"pagedData\" master-set-off=\"masterSetOff\" master-change=\"tblCtrl.masterChange()\" master-clicked=\"tblCtrl.masterClicked\" child-click=\"childClick\"></tri-state-checkbox>\n" +
+            "    </th>\n" +
+            "    <th bindonce ng-repeat=\"c in options.columnDefns track by $index\"<--SORT-->" +
+            "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" class=\"{{c.style}}\"><span ng-bind=\"c.name\">\n" +
+            "    </th>\n" +
+            "  </tr>\n" +
+            "</thead>"
         );
 
         $templateCache.put("template/table/customTableHeadNoSelect.html",
-          "<thead <--STICKYHEAD-->>\n" +
-          "  <tr>\n" +
-          "    <th bindonce ng-repeat=\"c in options.columnDefns track by $index\"<--SORT-->" +
-          "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" class=\"{{c.style}}\"><span ng-bind=\"c.name\">\n" +
-          "    </th>\n" +
-          "  </tr>\n" +
-          "</thead>"
+            "<thead <--STICKYHEAD-->>\n" +
+            "  <tr>\n" +
+            "    <th bindonce ng-repeat=\"c in options.columnDefns track by $index\"<--SORT-->" +
+            "      ng-click=\"tblCtrl.sortHeaderClicked(c.value)\" class=\"{{c.style}}\"><span ng-bind=\"c.name\">\n" +
+            "    </th>\n" +
+            "  </tr>\n" +
+            "</thead>"
         );
 
         $templateCache.put("template/table/customTableHeadNoTristate.html",
@@ -1462,31 +1470,31 @@
         );
 
         $templateCache.put("template/table/customTablePagerWithSize.html",
-          "<div id=\"<--PAGERID-->\" class=\"row\">\n" +
-          "  <div class=\"pull-left pagination\" ng-hide=\"tblCtrl.config.totalCount == 0\">\n" +
-          "    <span>Displaying </span><span ng-bind=\"tblCtrl.config.lowerRange\"></span> - <span ng-bind=\"tblCtrl.config.upperRange\"></span> of <span ng-bind=\"tblCtrl.config.totalCount\"></span>\n" +
-          "  </div>\n" +
-          "  <div class=\"pull-right\">" +
-          "    <div class=\"pagination\" style=\"display: inline-block;\" ng-hide=\"!tblCtrl.config.pageSizes || tblCtrl.config.totalCount == 0\">\n" +
-          "      <span class=\"multiselect-label\">Page Size</span>\n" +
-          "      <multiselect class=\"input-xlarge multiselect\" ng-model=\"tblCtrl.config.pageSize\" options=\"p.key as p.value for p in tblCtrl.config.pageSizes\"\n" +
-          "        header=\"Page Size\" multiple=\"false\" enable-filter=\"false\" ng-change=\"tblCtrl.pageSizeChanged()\" complex-models=\"false\">\n" +
-          "      </multiselect>\n" +
-          "    </div>\n" +
-          "    <custom-pagination ng-hide=\"tblCtrl.totalPages < 2\" class=\"pull-right\" total-items=\"tblCtrl.config.totalCount\" ng-model=\"tblCtrl.config.pageNumber\" max-size=\"tblCtrl.config.maxSize\" rotate=\"false\" items-per-page=\"tblCtrl.config.pageSize\" boundary-links=\"true\"\n" +
-          "      first-text=\"«\" last-text=\"»\" previous-text=\"‹\" next-text=\"›\" ng-change=\"tblCtrl.pageChanged()\">\n" +
-          "    </custom-pagination>\n" +
-          "  </div>\n" +
-          "</div>\n");
+            "<div id=\"<--PAGERID-->\" class=\"row\">\n" +
+            "  <div class=\"pull-left pagination\" ng-hide=\"tblCtrl.config.totalCount == 0\">\n" +
+            "    <span>Displaying </span><span ng-bind=\"tblCtrl.config.lowerRange\"></span> - <span ng-bind=\"tblCtrl.config.upperRange\"></span> of <span ng-bind=\"tblCtrl.config.totalCount\"></span>\n" +
+            "  </div>\n" +
+            "  <div class=\"pull-right\">" +
+            "    <div class=\"pagination\" style=\"display: inline-block;\" ng-hide=\"!tblCtrl.config.pageSizes || tblCtrl.config.totalCount == 0\">\n" +
+            "      <span class=\"multiselect-label\">Page Size</span>\n" +
+            "      <multiselect class=\"input-xlarge multiselect\" ng-model=\"tblCtrl.config.pageSize\" options=\"p.key as p.value for p in tblCtrl.config.pageSizes\"\n" +
+            "        header=\"Page Size\" multiple=\"false\" enable-filter=\"false\" ng-change=\"tblCtrl.pageSizeChanged()\" complex-models=\"false\">\n" +
+            "      </multiselect>\n" +
+            "    </div>\n" +
+            "    <custom-pagination ng-hide=\"tblCtrl.totalPages < 2\" class=\"pull-right\" total-items=\"tblCtrl.config.totalCount\" ng-model=\"tblCtrl.config.pageNumber\" max-size=\"tblCtrl.config.maxSize\" rotate=\"false\" items-per-page=\"tblCtrl.config.pageSize\" boundary-links=\"true\"\n" +
+            "      first-text=\"«\" last-text=\"»\" previous-text=\"‹\" next-text=\"›\" ng-change=\"tblCtrl.pageChanged()\">\n" +
+            "    </custom-pagination>\n" +
+            "  </div>\n" +
+            "</div>\n");
 
         $templateCache.put("template/pagination/customPagination.html",
-          "<ul class=\"pagination\">\n" +
-          "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(1)\">{{getText('first')}}</a></li>\n" +
-          "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
-          "  <li ng-repeat=\"page in pages track by $index\" ng-class=\"{active: page.active}\"><a href ng-click=\"selectPage(page.number)\">{{page.text}}</a></li>\n" +
-          "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
-          "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(totalPages)\">{{getText('last')}}</a></li>\n" +
-          "</ul>");
+            "<ul class=\"pagination\">\n" +
+            "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(1)\">{{getText('first')}}</a></li>\n" +
+            "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
+            "  <li ng-repeat=\"page in pages track by $index\" ng-class=\"{active: page.active}\"><a href ng-click=\"selectPage(page.number)\">{{page.text}}</a></li>\n" +
+            "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
+            "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(totalPages)\">{{getText('last')}}</a></li>\n" +
+            "</ul>");
     }]);
 
     angular
