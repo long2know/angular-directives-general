@@ -581,7 +581,8 @@
                         recordKey = trackBy,
                         tableCell = '',
                         cellClasses = '',
-                        itemClasses = '';
+                        itemClasses = '',
+                        pagerId = 'clientPager-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
 
                     if (scope.options.rowDefns) {
                         itemClasses = scope.options.rowDefns.computedClass;
@@ -674,7 +675,7 @@
                         tableHtml = tableHtml
                             .replace("<--STYLE-->", "")
                             .replace('<--STICKY-->', "id=\"" + tableId + "\"")
-                            .replace('<--STICKYHEAD-->', "custom-sticky-header move-pager=\"'" + scope.options.config.displayPager + "'\" scroll-header=\"'#" + containerId + "'\" scroll-body=\"'" + scope.options.config.stickyContainer + "'\" scroll-stop=\"" + scope.options.config.stickyHeaderOffset.toString() + "\" scrollable-container=\"'" + scope.options.config.stickyContainer + "'\"");
+                            .replace('<--STICKYHEAD-->', "custom-sticky-header client-pager=\"'#" + pagerId + "'\" move-pager=\"'" + scope.options.config.displayPager + "'\" scroll-header=\"'#" + containerId + "'\" scroll-body=\"'" + scope.options.config.stickyContainer + "'\" scroll-stop=\"" + scope.options.config.stickyHeaderOffset.toString() + "\" scrollable-container=\"'" + scope.options.config.stickyContainer + "'\"");
 
                         tableHtml = dupeTable + tableHtml;
                     } else {
@@ -685,7 +686,8 @@
                     }
 
                     if (scope.options.config.displayPager) {
-                        tableHtml += scope.options.config.displayPageSize ? tablePagerWithSizeTemplate : tablePagerTemplate;
+                        var pagerTemplate = scope.options.config.displayPageSize ? tablePagerWithSizeTemplate : tablePagerTemplate;
+                        tableHtml += pagerTemplate.replace("<--PAGERID-->", pagerId);
                     }
 
                     return tableHtml;
@@ -698,7 +700,9 @@
                         tableBody = '',
                         tableHead = '',
                         tableHtml = '',
-                        tableRows = '';
+                        tableRows = '',
+                        pagerId = 'clientPager-' + scope.$id + '-' + Math.floor(Math.random() * 10000);
+
                     tableBody = tableBodyTemplate.replace('<--ROWS-->', tableRows);
                     if (showSelectAll) {
                         tableHead = tableHeadTemplate.replace('<--ROWS-->', '');
@@ -715,7 +719,6 @@
 
                     // If is sticky header ..
                     if (scope.options.config.stickyHeader) {
-
                         var containerId = 'fixedHeaderContainer-' + scope.$id + '-' + Math.floor(Math.random() * 10000),
                             headerId = 'fixedHeader-' + scope.$id + '-' + Math.floor(Math.random() * 10000),
                             tableId = 'fixedTable-' + scope.$id + '-' + Math.floor(Math.random() * 10000),
@@ -733,7 +736,7 @@
                         tableHtml = tableHtml
                             .replace("<--STYLE-->", "")
                             .replace('<--STICKY-->', "id=\"" + tableId + "\"")
-                            .replace('<--STICKYHEAD-->', "custom-sticky-header move-pager=\"'" + scope.options.config.displayPager + "'\" scroll-header=\"'#" + containerId + "'\" scroll-body=\"'" + scope.options.config.stickyContainer + "'\" scroll-stop=\"" + scope.options.config.stickyHeaderOffset.toString() + "\" scrollable-container=\"'" + scope.options.config.stickyContainer + "'\"");
+                            .replace('<--STICKYHEAD-->', "custom-sticky-header client-pager=\"'#" + pagerId + "'\" move-pager=\"'" + scope.options.config.displayPager + "'\" scroll-header=\"'#" + containerId + "'\" scroll-body=\"'" + scope.options.config.stickyContainer + "'\" scroll-stop=\"" + scope.options.config.stickyHeaderOffset.toString() + "\" scrollable-container=\"'" + scope.options.config.stickyContainer + "'\"");
 
                         tableHtml = dupeTable + tableHtml;
                     } else {
@@ -744,7 +747,8 @@
                     }
 
                     if (scope.options.config.displayPager) {
-                        tableHtml += scope.options.config.displayPageSize ? tablePagerWithSizeTemplate : tablePagerTemplate;
+                        var pagerTemplate = scope.options.config.displayPageSize ? tablePagerWithSizeTemplate : tablePagerTemplate;
+                        tableHtml += pagerTemplate.replace("<--PAGERID-->", pagerId)
                     }
 
                     return tableHtml;
@@ -911,7 +915,8 @@
                 scrollableContainer: '=',
                 scrollHeader: '=',
                 contentOffset: '=',
-                movePager: '='
+                movePager: '=',
+                clientPager: '='
             },
             link: function (scope, element, attributes, control) {
                 var
@@ -923,7 +928,7 @@
                     topSet = false,
                     header = $(element, this),
                     clonedHeader = $(scope.scrollHeader), scrollableContainer = $(scope.scrollableContainer),
-                    clientPager = $('#clientPager'),
+                    clientPager = $(scope.clientPager),
                     calculateSize = function (isForced) {
                         var headerWidth = header.outerWidth();
                         if (prevWidth == headerWidth && !isForced) {
@@ -957,7 +962,7 @@
 
                         // If we're using a sticky header in a scrollable container, and the user wants us to move
                         // their pager outside of the scrollable container, do it ..
-                        if (clientPager) {
+                        if (clientPager && clientPager.length > 0) {
                             scrollableContainer.after(clientPager);
                         }
 
@@ -1449,7 +1454,7 @@
         );
 
         $templateCache.put("template/table/customTablePager.html",
-            "<div id=\"clientPager\" class=\"row\" ng-hide=\"tblCtrl.totalPages < 2\">\n" +
+            "<div id=\"<--PAGERID-->\" class=\"row\" ng-hide=\"tblCtrl.totalPages < 2\">\n" +
             "  <custom-pagination class=\"pull-right\" total-items=\"tblCtrl.config.totalCount\" ng-model=\"tblCtrl.config.pageNumber\" max-size=\"tblCtrl.config.maxSize\" rotate=\"false\" items-per-page=\"tblCtrl.config.pageSize\" boundary-links=\"true\"\n" +
             "    first-text=\"«\" last-text=\"»\" previous-text=\"‹\" next-text=\"›\" ng-change=\"tblCtrl.pageChanged()\">\n" +
             "  </custom-pagination>\n" +
@@ -1457,7 +1462,7 @@
         );
 
         $templateCache.put("template/table/customTablePagerWithSize.html",
-          "<div id=\"clientPager\" class=\"row\">\n" +
+          "<div id=\"<--PAGERID-->\" class=\"row\">\n" +
           "  <div class=\"pull-left pagination\" ng-hide=\"tblCtrl.config.totalCount == 0\">\n" +
           "    <span>Displaying </span><span ng-bind=\"tblCtrl.config.lowerRange\"></span> - <span ng-bind=\"tblCtrl.config.upperRange\"></span> of <span ng-bind=\"tblCtrl.config.totalCount\"></span>\n" +
           "  </div>\n" +

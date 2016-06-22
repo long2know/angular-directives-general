@@ -57,6 +57,170 @@ body, .container-fluid, .flex-layout
     /*padding:5px;*/
 }
 
+multiselect {
+    display: block;
+}
+
+    multiselect > .btn-group:not(.single),
+    customselect > .btn-group:not(.single) {
+        min-width: 150px;
+    }
+
+    multiselect > .btn-group.single,
+    customselect > .btn-group.single {
+        min-width: 75px;
+    }
+
+    multiselect > .btn-group,
+    .modal-form customselect > .btn-group {
+        width: 100%;
+    }
+
+    multiselect .btn,
+    customselect .btn {
+        width: 100%;
+        background-color: #FFF;
+    }
+
+        multiselect .btn.has-error,
+        customselect.btn.has-error {
+            border: 1px solid #a94442 !important;
+            color: #db524b;
+        }
+
+.multi-select-popup {
+    max-height: 400px;
+    min-width: 200px;
+    overflow-y: auto;
+}
+
+.custom-select-popup {
+    max-height: 400px;
+    min-width: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+    .custom-select-popup > li > .form-group > input {
+        max-width: none;
+        width: 100%;
+    }
+
+    .custom-select-popup > li > .form-group > ul {
+        max-width: 330px;
+    }
+
+    .multi-select-popup .filter,
+    .custom-select-popup .filter {
+        width: 100%;
+    }
+
+        .multi-select-popup .filter > input,
+        .custom-select-popup .filter > input {
+            width: 99%;
+            max-width: none;
+        }
+
+        .multi-select-popup .filter .glyphicon,
+        .custom-select-popup .filter .glyphicon {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+.multi-select-popup,
+.custom-select-popup {
+    box-sizing: border-box;
+    padding: 2px;
+}
+
+multiselect > .btn-group > button,
+customselect > .btn-group > button {
+    padding-right: 20px;
+}
+
+    multiselect > .btn-group > button > .caret,
+    customselect > .btn-group > button > .caret {
+        right: 5px;
+        top: 45%;
+        position: absolute;
+    }
+
+multiselect > .btn-group:not(.dropup) > button > .caret,
+customselect > .btn-group:not(.dropup) > button > .caret {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid black;
+}
+
+.multi-select-popup > li:not(.filter-container),
+.custom-select-popup > li:not(.filter-container) {
+    padding-right: 10px;
+}
+
+.multi-select-popup .filter-container input::-ms-clear,
+.date-field::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.multi-select-popup .filter-container input::-ms-reveal,
+.date-field::-ms-reveal {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.multi-select-popup .filter-container input::-webkit-search-decoration,
+.multi-select-popup .filter-container input::-webkit-search-cancel-button,
+.multi-select-popup .filter-container input::-webkit-search-results-button,
+.multi-select-popup .filter-container input::-webkit-search-results-decoration,
+.date-field::-webkit-search-decoration,
+.date-field::-webkit-search-cancel-button,
+.date-field::-webkit-search-results-button,
+.date-field::-webkit-search-results-decoration {
+    display: none;
+}
+
+.multi-select-popup > li > a,
+.custom-select-popup > li > a {
+    padding: 3px 10px;
+    cursor: pointer;
+}
+
+    .multi-select-popup > li > a i,
+    .custom-select-popup > li > a i {
+        margin-right: 4px;
+    }
+
+/*Add padding if pagination is preceeded by another element with pagniation class*/
+.pagination ~ ul.pagination {
+    padding-left: 10px !important;
+}
+
+.pagination {
+    font-size: .8em;
+    height: 2.8em;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+    .pagination multiselect > .btn-group > button {
+        font-size: 1.0em;
+    }
+
+.multiselect-label ~ multiselect {
+    display: inline-block;
+}
+
+.pagination multiselect > .btn-group > button {
+    font-size: 1.0em;
+}
+
+.multiselect-label ~ multiselect {
+    display: inline-block;
+}
+
 /* TABLE STYLING */
 .custom-table {
     margin: 0 0 25px;
