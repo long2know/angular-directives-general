@@ -26,7 +26,7 @@ Code copyright 2015-2016 Stephen Long.  Code released under the [Apache license]
 - [Demo Codepen](http://codepen.io/long2know/pen/WvmJod)
 
 ### Model Property Watch and Reset Directive
-- [Blog](https://long2know.com)
+- [Blog](https://long2know.com/2015/08/angular-property-state-watcher-and-setter-directive/)
 - [Demo Plunker](http://plnkr.co/edit/w876ka?p=preview)
 - [Demo Codepen](http://codepen.io/long2know/pen/PqLvBX)
 
