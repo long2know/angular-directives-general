@@ -292,7 +292,7 @@
                 if (tblCtrl.clientSort) {
                     // Is numeric?
                     var column = $scope.options.columnDefns.filter(function (c) { return c.value === tblCtrl.config.sortBy })[0];
-                    var isNumeric = column.filter === "currency" || column.isNumeric;
+                    var isNumeric = (column.filter && column.filter.indexOf("currency") != -1) || (column.isNumeric === true);
 
                     sort(tblCtrl.records, tblCtrl.config.sortBy, tblCtrl.config.sortDirection, isNumeric);
                     if (tblCtrl.useRepeat === false) {
@@ -1074,7 +1074,10 @@
                             clonedHeader.addClass('custom-sticky-header');
                         } else if (firstScroll) {
                             // Moved the clone before our scrollable container so we can use absolute positioning
-                            clonedHeader.insertBefore(scrollableContainer);
+                            // Lastest Chrome breaks this behavior.  flex-children have have to be in the same
+                            // container.  There probably needs to be a check to determine if flex-layout is being used.
+                            //  I just happen to know that all of of the layouts in Commissions use flex-layout
+                            //clonedHeader.insertBefore(scrollableContainer);
                             clonedHeader[0].style.position = 'absolute';
                         }
                         setColumnHeaderSizes();
