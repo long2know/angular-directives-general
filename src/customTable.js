@@ -1345,7 +1345,7 @@
     customPaginationController.$inject = ['$scope', '$attrs', '$parse'];
     customPagination.$inject = ['$parse', 'customPaginationConfig'];
 
-    angular.module("csoki").run(["$templateCache", function ($templateCache) {
+    angular.module("long2know").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/table/customTable.html",
             "<table <--STICKY--> class=\"table-striped table-hover custom-table\" <--STYLE-->>\n" +
             "  <--HEAD-->\n" +
