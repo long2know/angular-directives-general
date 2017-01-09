@@ -252,7 +252,11 @@
                     return obj;
                 };
 
-                var primer = isNumeric ? function (a) { return parseFloat(String(a).replace(/[^0-9.-]+/g, '')); } :
+                var primer = isNumeric ?
+                    function (a) {
+                        var retValue = parseFloat(String(a).replace(/[^0-9.-]+/g, ''));
+                        return isNaN(retValue) ? 0.0 : retValue;
+                    } :
                     function (a) { return String(a).toUpperCase(); };
 
                 isSorting = true;
@@ -804,6 +808,7 @@
 
                                 filter = tableColumn.filter ? ' | ' + tableColumn.filter : '';
                                 itemValue = scope.$eval(binding + filter);
+                                itemValue = itemValue == null ? '' : itemValue;
                                 cellClasses = '';
                                 tableCell = '';
                                 // Computed class for cell
@@ -894,7 +899,14 @@
                             scope.pagedData.push(scope.options.records[i]);
                         }
                         tblCtrl.config.lowerRange = ((tblCtrl.config.pageNumber - 1) * tblCtrl.config.pageSize) + 1;
-                        tblCtrl.config.upperRange = tblCtrl.config.lowerRange + tblCtrl.records.length - 1;
+                        if (!tblCtrl.clientPaging) {
+                            tblCtrl.config.upperRange = tblCtrl.config.lowerRange + tblCtrl.records.length - 1;
+                        } else {
+                            tblCtrl.config.upperRange = tblCtrl.config.lowerRange + tblCtrl.config.pageSize - 1;
+                            if (tblCtrl.config.upperRange > tblCtrl.records.length) {
+                                tblCtrl.config.upperRange = tblCtrl.records.length;
+                            }
+                        }
                         tblCtrl.config.totalPages = parseInt(Math.ceil(tblCtrl.config.totalCount / tblCtrl.config.pageSize));
                     }
                     else {
@@ -970,7 +982,7 @@
 
                         // If we're using a sticky header in a scrollable container, and the user wants us to move
                         // their pager outside of the scrollable container, do it ..
-                        if (clientPager && clientPager.length > 0) {
+                        if (clientPager && clientPager.length > 0) { // !$document.contains(clientPager[0])) {
                             scrollableContainer.after(clientPager);
                         }
 
@@ -992,26 +1004,14 @@
                         var bodyColumns = header.parent().find("tbody > tr:first td");
                         var clonedColumns = clonedHeader.find('th');
                         header.find('th').each(function (index, column) {
+                            var width = $(column).width();
                             var clonedColumn = $(clonedColumns[index]);
-                            var cstyle = column.ownerDocument.defaultView.getComputedStyle(column, null);
-                            sum += column.offsetWidth;
-                            var offsetWidth = column.offsetWidth + 'px';
-                            //var offsetWidth = cstyle.width;
-                            var borderLeftWidth = cstyle.getPropertyValue('border-left-width');
-                            var borderRightWidth = cstyle.getPropertyValue('border-right-width');
-                            var paddingLeft = cstyle.getPropertyValue('padding-left');
-                            var paddingRight = cstyle.getPropertyValue('padding-right');
-                            var marginLeft = cstyle.getPropertyValue('margin-left');
-                            var marginRight = cstyle.getPropertyValue('margin-right');
+                            clonedColumn.width(width);
                             clonedColumn.css({
-                                'width': offsetWidth,
-                                'padding-left': paddingLeft,
-                                'padding-right': paddingRight,
-                                'border-left-width': borderLeftWidth,
-                                'border-right-width': borderRightWidth,
-                                'margin-left': marginLeft,
-                                'margin-right': marginRight
+                                'max-width': 'none',
+                                'min-width': '0'
                             });
+                            sum += column.offsetWidth;
                         });
 
                         $log.log('Set column header sizes.');
@@ -1345,7 +1345,7 @@
     customPaginationController.$inject = ['$scope', '$attrs', '$parse'];
     customPagination.$inject = ['$parse', 'customPaginationConfig'];
 
-    angular.module("long2know").run(["$templateCache", function ($templateCache) {
+    angular.module("csoki").run(["$templateCache", function ($templateCache) {
         $templateCache.put("template/table/customTable.html",
             "<table <--STICKY--> class=\"table-striped table-hover custom-table\" <--STYLE-->>\n" +
             "  <--HEAD-->\n" +
