@@ -61,11 +61,15 @@
                     isAutoFocus = attrs.autoFocus ? originalScope.$eval(attrs.autoFocus) : false,
                     isComplex = attrs.complexModels ? originalScope.$eval(attrs.complexModels) : false,
                     enableFilter = attrs.enableFilter ? originalScope.$eval(attrs.enableFilter) : true,
+                    enableCheckAll = attrs.enableCheckAll ? originalScope.$eval(attrs.enableCheckAll) : true,
+                    enableUncheckAll = attrs.enableUncheckAll ? originalScope.$eval(attrs.enableUncheckAll) : true,
                     header = attrs.header ? attrs.header : "Select",
                     selectedHeader = attrs.selectedHeader ? attrs.selectedHeader : 'selected',
                     selectLimit = attrs.selectLimit ? originalScope.$eval(attrs.selectLimit) : 0,
                     useFiltered = attrs.selectLimitUseFiltered ? originalScope.$eval(attrs.selectLimitUseFiltered) : true,
                     filterPlaceholder = attrs.filterPlaceholder ? attrs.filterPlaceholder : "Filter ..",
+                    checkAllLabel = attrs.checkAllLabel ? attrs.checkAllLabel : "Check all",
+                    uncheckAllLabel = attrs.uncheckAllLabel ? attrs.uncheckAllLabel : "Uncheck all",
                     appendToBody = attrs.appendToBody ? originalScope.$eval(attrs.appendToBody) : false,
                     required = false,
                     lastSelectedLabel = '',
@@ -294,8 +298,12 @@
                 scope.multiple = isMultiple;
                 scope.disabled = false;
                 scope.filterPlaceholder = filterPlaceholder;
+                scope.checkAllLabel = checkAllLabel;
+                scope.uncheckAllLabel = uncheckAllLabel;
                 scope.selectLimit = selectLimit;
                 scope.enableFilter = enableFilter;
+                scope.enableCheckAll = enableCheckAll;
+                scope.enableUncheckAll = enableUncheckAll;
                 scope.searchText = { label: '' };
                 scope.isAutoFocus = isAutoFocus;
                 scope.appendToBody = appendToBody;
@@ -363,7 +371,7 @@
                             if (isArray && newVal.length == 0) {
                                 scope.uncheckAll();
                             } else {
-                                markChecked(newVal);
+                                scope.uncheckAll();
                             }
                             markChecked(newVal);
                             scope.isModelValueSet = true;
@@ -590,9 +598,9 @@
                             "<span class=\"glyphicon glyphicon-remove-circle form-control-feedback\" ng-click=\"clearFilter()\"></span>" +
                         "</div>" +
                     "</li>" +
-                    "<li ng-show=\"multiple\">" +
-                        "<button type=\"button\" class=\"btn-link btn-small\" ng-click=\"checkAll()\"><i class=\"icon-ok\"></i> Check all</button>" +
-                        "<button type=\"button\" class=\"btn-link btn-small\" ng-click=\"uncheckAll()\"><i class=\"icon-remove\"></i> Uncheck all</button>" +
+                    "<li ng-show=\"multiple && (enableCheckAll || enableUncheckAll)\">" +
+                        "<button ng-if=\"enableCheckAll\" type=\"button\" class=\"btn-link btn-small\" ng-click=\"checkAll()\"><i class=\"icon-ok\"></i> {{ checkAllLabel }}</button>" +
+                        "<button ng-if=\"enableUncheckAll\" type=\"button\" class=\"btn-link btn-small\" ng-click=\"uncheckAll()\"><i class=\"icon-remove\"></i> {{ uncheckAllLabel }}</button>" +
                     "</li>" +
                     "<li ng-show=\"maxSelected\">" +
                         "<small>Selected maximum of </small><small ng-bind=\"selectLimit\"></small>" +
@@ -607,7 +615,7 @@
                 "</ul>" +
             "</div>");
     }]);
-    
+
     multiselectParser.$inject = ['$parse'];
     multiselect.$inject = ['$parse', '$timeout', '$filter', '$document', '$compile', '$window', '$uibPosition', 'multiselectParser'];
     multiselectPopup.$inject = ['$document'];
