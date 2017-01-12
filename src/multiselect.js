@@ -368,9 +368,7 @@
                     if (!scope.triggered) {
                         if (angular.isDefined(newVal)) {
                             var isArray = newVal instanceof Array;
-                            if (isArray && newVal.length == 0) {
-                                scope.uncheckAll();
-                            } else {
+                            if ((isArray && newVal.length == 0) || !isArray) {
                                 scope.uncheckAll();
                             }
                             markChecked(newVal);
