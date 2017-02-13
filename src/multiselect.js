@@ -355,6 +355,7 @@
                 }, function (newVal) {
                     if (angular.isDefined(newVal)) {
                         parseModel();
+                        setModelValue(isMultiple);
                     }
                 }, true);
 
