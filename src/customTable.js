@@ -20,6 +20,34 @@
             ]);
     }
 
+    String.prototype.toDate = function(dateFormat) {
+        var dateStr = formattedStr = this;
+        if (dateFormat) {
+            var delimiter = dateFormat.match(/\W/g)[0];
+            var arr = dateFormat.split(delimiter);
+            var replaceStr = '$' + (arr.indexOf('YYYY') + 1) + '-$' + (arr.indexOf('MM')+1) + '-$' + (arr.indexOf('dd')+1);
+            formattedStr = dateStr.replace(/(\d+)-(\d+)-(\d+)/, replaceStr);
+            console.log(replaceStr + ' ' + formattedStr);
+        }
+        if (formattedStr.indexOf(':') === -1)
+            formattedStr += ' 00:00';	
+        var date = new Date(formattedStr);
+        if (date.getTime() === date.getTime())
+            return date;
+        return new Date(-8640000000000000);
+    };
+
+    var euroTest = /[-+]?\s[0-9]{1,3}(.[0-9]{3}),[0-9]+/;
+    var replaceFunc = function (x) { return x == "," ? "." : ","; }
+    String.prototype.toFloat = function() {
+        var str = this;
+        var isEuroFormat = euroTest.test(str);
+        // Swap commas and decimals
+        if (isEuroFormat) { str = str.replace(/[,.]/g, replaceFunc(x)); }
+        var retValue = parseFloat(str.replace(/[^0-9.-]+/g, ''));
+        return isNaN(retValue) ? 0.0 : retValue;                           
+    };
+
     var customTableController = function ($scope, $attrs, $parse, $timeout, $animate, $log, $window) {
         var
             tblCtrl = this,
@@ -233,7 +261,7 @@
                     });
                 }
             },
-            sort = function (array, fieldName, direction, isNumeric) {
+            sort = function (array, fieldName, direction, dataType, dateFormat) {
                 var sortFunc = function (field, rev, primer) {
                     // Return the required a,b function
                     return function (a, b) {
@@ -251,13 +279,27 @@
                     };
                     return obj;
                 };
-
-                var primer = isNumeric ?
-                    function (a) {
-                        var retValue = parseFloat(String(a).replace(/[^0-9.-]+/g, ''));
-                        return isNaN(retValue) ? 0.0 : retValue;
-                    } :
-                    function (a) { return String(a).toUpperCase(); };
+                
+                var primer;
+                switch (dataType) {
+                    case 'numeric':
+                        primer = function (a) {
+                            var str = String(a);
+                            return str.toFloat();                               
+                        };
+                        break;
+                    case 'date':
+                    case 'date-time':
+                    case 'datetime':
+                        primer = function (a) {
+                            var dateStr = String(a);
+                            return dateStr.toDate(dateFormat);
+                        }
+                        break;
+                    default:
+                        primer = function (a) { return String(a).toUpperCase(); };
+                        break;
+                };
 
                 isSorting = true;
                 start = new Date().getTime();
@@ -296,9 +338,18 @@
                 if (tblCtrl.clientSort) {
                     // Is numeric?
                     var column = $scope.options.columnDefns.filter(function (c) { return c.value === tblCtrl.config.sortBy })[0];
-                    var isNumeric = (column.filter && column.filter.indexOf("currency") != -1) || (column.isNumeric === true);
+                    var dataType = column.dataType;
+                    var dataFormat = column.dataFormat;
+                    if (!column.dataType) {
+                        var isNumeric = (column.filter && column.filter.indexOf("currency") != -1) || (column.isNumeric === true);
+                        if (isNumeric) {
+                            dataType = 'numeric';                            
+                        } else {
+                            dataType = 'string';
+                        }
+                    }
 
-                    sort(tblCtrl.records, tblCtrl.config.sortBy, tblCtrl.config.sortDirection, isNumeric);
+                    sort(tblCtrl.records, tblCtrl.config.sortBy, tblCtrl.config.sortDirection, dataType, dataFormat);
                     if (tblCtrl.useRepeat === false) {
                         //redrawTable(); --> watchCollection should pickup
                     }
