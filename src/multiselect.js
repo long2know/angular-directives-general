@@ -71,6 +71,7 @@
                     checkAllLabel = attrs.checkAllLabel ? attrs.checkAllLabel : "Check all",
                     uncheckAllLabel = attrs.uncheckAllLabel ? attrs.uncheckAllLabel : "Uncheck all",
                     appendToBody = attrs.appendToBody ? originalScope.$eval(attrs.appendToBody) : false,
+                    orderLabel = attrs.orderLabel ? attrs.orderLabel : "$index",
                     required = false,
                     lastSelectedLabel = '',
                     scope = originalScope.$new(true),
@@ -311,7 +312,7 @@
                 scope.popupId = popupId;
                 scope.recalculatePosition = recalculatePosition;
                 scope.isModelValueSet = false;
-
+                scope.orderLabel = orderLabel;
                 originalScope.$on('$destroy', function () {
                     scope.$destroy();
                     $document.unbind('click', scope.clickHandler);
@@ -604,7 +605,7 @@
                     "<li ng-show=\"maxSelected\">" +
                         "<small>Selected maximum of </small><small ng-bind=\"selectLimit\"></small>" +
                     "</li>" +
-                    "<li ng-repeat=\"i in items | filter:searchText\">" +
+                    "<li ng-repeat=\"i in items | filter:searchText | orderBy:orderLabel:true\">" +
                         //"<a ng-click=\"select(i); focus()\">" +
                         "<a ng-click=\"select(i);\">" +
                             "<i class=\"glyphicon\" ng-class=\"{'glyphicon-ok': i.checked, 'glyphicon-none': !i.checked}\"></i>" +
