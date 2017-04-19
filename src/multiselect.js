@@ -590,7 +590,7 @@
                     "<span class=\"pull-left\" ng-bind=\"header\"></span>" +
                     "<span class=\"caret pull-right\"></span>" +
                 "</button>" +
-                "<ul class=\"dropdown-menu multi-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {}}[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
+                "<ul class=\"dropdown-menu multi-select-popup\" ng-show=\"isOpen && !moveInProgress\" ng-style=\"{ true: {top: position.top +'px', left: position.left +'px'}, false: {} }[appendToBody]\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen}}\">" +
                     "<li ng-if=\"enableFilter\" class=\"filter-container\">" +
                         "<div class=\"form-group has-feedback filter\">" +
                             "<input class=\"form-control\" type=\"text\" ng-model=\"searchText.label\" placeholder=\"{{ filterPlaceholder }}\" />" +
