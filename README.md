@@ -35,3 +35,7 @@ Code copyright 2015-2016 Stephen Long.  Code released under the [Apache license]
 - [Demo Plunker](http://plnkr.co/edit/GSORcd?p=preview)
 - [Demo Codepen](http://codepen.io/long2know/pen/dYPvOW)
 
+### Clipboard directive with clipboard service
+- [Blog](https://long2know.com/2017/07/angularjs-copy-to-clipboard-directive/)
+- [Demo Plunker](https://plnkr.co/edit/qPmxIF?p=preview)
+
