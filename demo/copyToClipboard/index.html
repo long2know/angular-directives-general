@@ -1,0 +1,76 @@
+<html>
+<head>
+    <title>Clipboard Directive Demo</title>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.2/toastr.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-animate.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-loader.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-sanitize.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-cookies.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-touch.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular-resource.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.14.3/ui-bootstrap-tpls.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.2/angular-ui-router.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui-ieshiv.min.js"></script>
+    <script type='text/javascript' src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui/0.4.0/angular-ui.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.1/toastr.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script type='text/javascript' src="script.js"></script>
+    <script type='text/javascript' src="../../src/copyToClipboard.js"></script>
+    <script type='text/javascript' src="../../src/clipboardService.js"></script>
+    <script type='text/javascript' src="https://rawgit.com/long2know/angular-dialog-service/master/src/dialogService.js"></script>
+    <script type='text/javascript' src="https://rawgit.com/long2know/angular-services-general/master/src/toastService.js"></script>
+</head>
+<body ng-app="myApp">
+    <div ng-include="'menu.html'"></div>
+    <div ui-view="main" class="container"></div>
+
+    <script type="text/ng-template" id="menu.html">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <span class="navbar-brand">Clipboard Directive Demo</span>
+                </div>
+            </div>
+        </nav>
+    </script>
+
+    <script type="text/ng-template" id="state1.html">
+        <form class="form-inline container" name="vm.form" role="form" novalidate>
+            <div class="row">
+                <div class="form-group">
+                    <label>Text area and button bound to the same model</label>
+                    <textarea ng-model="vm.textArea" placeholder="Type some text here." style="float:left; min-height:6em; margin-right:1em;"/>
+                    <button copy-to-clipboard ng-model="vm.textArea" aria-label="Copy to clipboard" class="btn btn-default" type="button" uib-tooltip="Click to copy to clipboard">
+                        <svg aria-hidden="true" version="1.1" viewBox="0 0 14 16" style="min-width:2em;">
+                            <path fill-rule="evenodd" d="M2 13h4v1H2v-1zm5-6H2v1h5V7zm2 3V8l-3 3 3 3v-2h5v-2H9zM4.5 9H2v1h2.5V9zM2 12h2.5v-1H2v1zm9 1h1v2c-.02.28-.11.52-.3.7-.19.18-.42.28-.7.3H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2h3c.55 0 1 .45 1 1v5h-1V6H1v9h10v-2zM2 5h8c0-.55-.45-1-1-1H8c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1H3c-.55 0-1 .45-1 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="form-group pull-right">
+                    <label>Scratch area for pasting</label>
+                    <textarea placeholder="Paste some text here." style="float:left; min-height:6em; min-width:12em;"/>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <div class="row">
+                <div class="form-group">
+                    <label>Button bound to an expressionl</label>
+                    <button copy-to-clipboard="vm.getDate()" aria-label="Copy to clipboard" class="btn btn-default" type="button" uib-tooltip="Click to copy to clipboard">
+                        <svg aria-hidden="true" version="1.1" viewBox="0 0 14 16" style="min-width:2em;">
+                            <path fill-rule="evenodd" d="M2 13h4v1H2v-1zm5-6H2v1h5V7zm2 3V8l-3 3 3 3v-2h5v-2H9zM4.5 9H2v1h2.5V9zM2 12h2.5v-1H2v1zm9 1h1v2c-.02.28-.11.52-.3.7-.19.18-.42.28-.7.3H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2h3c.55 0 1 .45 1 1v5h-1V6H1v9h10v-2zM2 5h8c0-.55-.45-1-1-1H8c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1H3c-.55 0-1 .45-1 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </script>
+
+</body>
+</html>

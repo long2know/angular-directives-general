@@ -1,0 +1,28 @@
+small {
+    font-size: 0.625em;
+    font-style: italic;
+    color: #a94442;
+    display: block;
+    float:right;
+}
+
+input {
+    display:block !important;
+}
+
+label {
+    display:block;
+}
+
+.container {
+    width: auto !important;
+}
+
+.form-inline .form-group {
+    display:inline-block;
+    width: auto;
+}
+
+input {
+    width: 250px !important;
+}
